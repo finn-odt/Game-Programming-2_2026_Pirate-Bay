@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ff261025a9a73a4f9e92f59deb29d05, type: 3}
+  m_Name: Arrow_Explosive
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItemDataSO
+  itemId: Arrow_Exp
+  mesh: {fileID: 4300000, guid: a6c4c9afde33c4603bef3ca6b3a587ca, type: 3}
+  material: {fileID: 2100000, guid: 1c8657c6b5cdc4eb5bcac1968488b356, type: 2}
+  meshScale: 0.21
+  itemName: Arrow (Explosive)
+  description: This arrow explodes on impact and deals massive damage to nearby lifeforms
+  shopCost: 20
+  weight: 0
+  efficiency: 5
+  icon: {fileID: 2800000, guid: d42d8b3b9c260ff41ac58215e7a406d5, type: 3}

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 431d9cdd2b3d5412e90eee89b0e7ee4e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 346534
+  packageName: CurvedText Easy
+  packageVersion: 1.0.0
+  assetPath: Assets/CurvedTextEasy/CurvedTextEasy.cs
+  uploadId: 824300

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ff261025a9a73a4f9e92f59deb29d05, type: 3}
+  m_Name: Arrow_Regular
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItemDataSO
+  itemId: Arrow
+  mesh: {fileID: 4300000, guid: 50a2457a4e6e34726805bc233f01b387, type: 3}
+  material: {fileID: 2100000, guid: 1c8657c6b5cdc4eb5bcac1968488b356, type: 2}
+  meshScale: 0.21
+  itemName: Arrow
+  description: Normal arrow for precise shooting
+  shopCost: 5
+  weight: 0
+  efficiency: 2
+  icon: {fileID: 2800000, guid: e62290ea7d887bb45916da7b42fb9f36, type: 3}

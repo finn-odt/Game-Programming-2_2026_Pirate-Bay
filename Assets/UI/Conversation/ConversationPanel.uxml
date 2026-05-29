@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Conversation/ConversationPanel.uss" />
+    <ui:VisualElement name="conversation-screen" class="conversation-screen">
+        <ui:VisualElement class="conversation-box">
+            <ui:VisualElement name="conversation-panel" class="conversation-panel">
+                <ui:Label name="spoken-words" class="spoken-words" text="Here could be a conversation"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement class="button-indicators">
+                <ui:VisualElement class="acceptance">
+                    <ui:Label class="accept-buttons-label" text="Accept" />
+                    <ui:Image class="accept-button-icon" source="./Textures/enter.png"/>
+                    <ui:Image class="accept-button-icon" source="./Textures/button_south.png"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="decline">
+                    <ui:Label class="decline-buttons-label" text="Decline" />
+                    <ui:Image class="decline-button-icon" source="./Textures/backspace.png"/>
+                    <ui:Image class="decline-button-icon" source="./Textures/button_east.png"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

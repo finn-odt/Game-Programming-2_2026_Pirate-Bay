@@ -1,0 +1,58 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Inventory/InventoryPanel.uss" />
+    <ui:VisualElement name="inventory-screen" class="inventory-screen">
+        <ui:VisualElement name="inventory-slot-drag-ghost" class="inventory-slot-drag-ghost">
+            <ui:Image class="inventory-slot-icon"/>
+            <ui:Label class="inventory-slot-quantity"/>
+        </ui:VisualElement>
+        
+        <ui:VisualElement name="inventory-panel" class="inventory-panel">
+            <ui:Button name="close-button" text="" class="close-button" tooltip="Close Inventory">
+                <ui:VisualElement class="close-button-icon" />
+            </ui:Button>
+            
+            <ui:VisualElement class="inventory-header">
+                <ui:VisualElement class="inventory-title">
+                    <ui:VisualElement class="inventory-title-underline" />
+                    <ui:Label text="Inventory" class="inventory-title-text"/>
+                </ui:VisualElement>
+                <ui:Label name="status-label" text="Capacity: 0/200" class="inventory-status" />
+            </ui:VisualElement>
+            
+            <ui:VisualElement class="inventory-display">
+                <ui:VisualElement class="inventory-list">
+                    <ui:Label name="empty-state" text="No items collected." class="empty-state" />
+                    <ui:ScrollView name="inventory-scroll" class="inventory-scroll">
+                        <ui:VisualElement name="inventory-grid" class="inventory-grid">
+                            
+                            <ui:VisualElement class="left-hand-equip-slot">
+                                <ui:Label class="equip-slot-title" text="Left Hand"/>
+                                <ui:Image class="inventory-slot-icon"/>
+                                <ui:Label class="inventory-slot-quantity" text="x5"/>
+                                <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
+                            </ui:VisualElement>
+                            
+                            <ui:VisualElement class="right-hand-equip-slot">
+                                <ui:Label class="equip-slot-title" text="Right Hand"/>
+                                <ui:Image class="inventory-slot-icon"/>
+                                <ui:Label class="inventory-slot-quantity" text="x5"/>
+                                <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
+                            </ui:VisualElement>
+                            
+                        </ui:VisualElement>
+                    </ui:ScrollView>
+                </ui:VisualElement>
+                
+                <ui:VisualElement name="inventory-details" class="inventory-details">
+                    <ui:Label name="inventory-details-quantity" class="inventory-details-quantity"/>
+                    <ui:Image name="inventory-details-icon" class="inventory-details-icon"/>
+                    <ui:Label name="inventory-details-name" class="inventory-details-name"/>
+                    <ui:Label name="inventory-details-description" class="inventory-details-description"/>
+                    <ui:Button name="drop-button" class="drop-button" tooltip="Drop Item">
+                        <ui:VisualElement class="drop-button-icon" />
+                    </ui:Button>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
