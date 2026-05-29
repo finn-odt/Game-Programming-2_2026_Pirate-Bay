@@ -360,5 +360,20 @@ namespace GameEvents
         }
     }
     
+    public class PlayerStripItemEvent : GameEvent
+    {
+        public readonly bool leftHand;
+        
+        public PlayerStripItemEvent(bool leftHand)
+        {
+            this.leftHand = leftHand;
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
 
 }

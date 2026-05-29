@@ -355,6 +355,7 @@ public class GameObjectFactory : MonoBehaviour
         CollectableItem itemScript = item.GetComponentInChildren<CollectableItem>();
         itemScript.InventoryItemData = itemDatabase.GetRandomItem();
         itemScript.amount = Random.Range(0f, 1f) < 0.1f ? Random.Range(3, 7) : Random.Range(1, 3);  // 10%: 3-6, 90%: 1 or 2
+        itemScript.showParticleEffect = true;
         
         item.transform.parent = parentForItems.transform;
         Debug.LogWarning("Spawned Item on NPC NavMesh.");

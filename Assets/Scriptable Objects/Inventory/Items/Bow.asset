@@ -16,6 +16,7 @@ MonoBehaviour:
   mesh: {fileID: 4300000, guid: f9daf41ee441145289fca40ce1878964, type: 3}
   material: {fileID: 2100000, guid: 1c8657c6b5cdc4eb5bcac1968488b356, type: 2}
   meshScale: 0.21
+  meshEulerRotation: {x: 0, y: 0, z: 180}
   itemName: Bow
   description: Can shoot normal and explosive arrows
   shopCost: 40

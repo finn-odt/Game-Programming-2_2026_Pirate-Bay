@@ -14,7 +14,8 @@ public class ConversationUI : MonoBehaviour
     [SerializeField] private UIDocument document;
     
     [SerializeField] private Font pirateFont;
-    
+
+    private static VisualElement root;
     private static VisualElement panel;
     private static Label spokenWords;
     
@@ -84,6 +85,7 @@ public class ConversationUI : MonoBehaviour
     
     private void OnConversationRequest(ConversationUIEvent e)
     {
+        Debug.Log(e.message);
         SetOpen(e.isOpen, e.message);
     }
 
@@ -100,7 +102,7 @@ public class ConversationUI : MonoBehaviour
 
     private void BindDocument()
     {
-        VisualElement root = document.rootVisualElement;
+        root = document.rootVisualElement;
         
         panel = root.Q<VisualElement>("conversation-screen");
         spokenWords = root.Q<Label>("spoken-words");
@@ -121,9 +123,9 @@ public class ConversationUI : MonoBehaviour
     {
         isOpen = open;
         
-        if (document != null)
+        if (root != null)
         {
-            document.enabled = isOpen;
+            root.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         if (panel != null)

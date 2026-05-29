@@ -12,6 +12,7 @@ public class CollectableItem : IInteractable
     [SerializeField] private GameObject meshGameObject;
 
     public int amount;
+    public bool showParticleEffect = false;
     
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
@@ -50,16 +51,20 @@ public class CollectableItem : IInteractable
     void Start()
     {
         ApplyItemData();
-        
+
         increaseVisibilityEffect = GetComponentInChildren<ParticleSystem>();
-        if (increaseVisibilityEffect != null)
+        if (increaseVisibilityEffect == null)
+            return;
+        
+        if (showParticleEffect)
             increaseVisibilityEffect.Play();
-        // TODO: ggf. mit Time.timeSinceLevelLoad; paaren
+        else
+            increaseVisibilityEffect.gameObject.SetActive(false);
     }
 
     private void LateUpdate()
     {
-        if(increaseVisibilityEffect != null && !increaseVisibilityEffect.isPlaying)
+        if(showParticleEffect && increaseVisibilityEffect != null && !increaseVisibilityEffect.isPlaying)
             increaseVisibilityEffect.Play();
     }
 
@@ -75,6 +80,7 @@ public class CollectableItem : IInteractable
         meshRenderer.sharedMaterial = InventoryItemData.Material;
 
         meshGameObject.transform.localScale = Vector3.one * InventoryItemData.MeshScale;
+        meshGameObject.transform.localRotation = Quaternion.LookRotation(InventoryItemData.MeshEulerRotation);
     }
 
     protected override void OnPlayerInteraction(PlayerInteractionRequestEvent e)

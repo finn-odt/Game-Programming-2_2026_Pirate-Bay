@@ -43,15 +43,29 @@ namespace Player
         private void Start()
         {
         }
-
+        
         public void EquipItemToHand(PlayerEquipItemEvent e)
         {
-            if (!e.leftHand)
-                e.item.transform.parent = rightHandEquipParent.transform;
-            else
-                e.item.transform.parent = leftHandEquipParent.transform;
-            
+            Transform parent = e.leftHand
+                ? leftHandEquipParent.transform
+                : rightHandEquipParent.transform;
+
+            e.item.transform.SetParent(parent, false);
+
             e.item.transform.localPosition = Vector3.zero;
+            e.item.transform.localEulerAngles = Vector3.zero;  // !e.leftHand ? new Vector3(0, 0, 180f) :
+
+            Debug.LogWarning($"WorldPos: {e.item.transform.position}");
+            Debug.LogWarning($"LocalPos: {e.item.transform.localPosition}");
+        }
+        
+        public void StipItemFromHand(PlayerStripItemEvent e)
+        {
+            GameObject parent = e.leftHand ? leftHandEquipParent : rightHandEquipParent;
+            foreach (Transform child in parent.transform)
+            {
+                Destroy(child.gameObject);
+            }
         }
 
         void OnEnable()
@@ -63,6 +77,7 @@ namespace Player
             GameEventManager.AddListener<PlayerHealEvent>(OnHealing);
             
             GameEventManager.AddListener<PlayerEquipItemEvent>(EquipItemToHand);
+            GameEventManager.AddListener<PlayerStripItemEvent>(StipItemFromHand);
         }
 
         void OnDisable()
@@ -74,6 +89,7 @@ namespace Player
             GameEventManager.RemoveListener<PlayerHealEvent>(OnHealing);
             
             GameEventManager.RemoveListener<PlayerEquipItemEvent>(EquipItemToHand);
+            GameEventManager.RemoveListener<PlayerStripItemEvent>(StipItemFromHand);
         }
 
         private void OnCoinCollection(CollectedCoinEvent e)

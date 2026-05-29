@@ -28,7 +28,9 @@ namespace Configurations
 
         public int coinAmount = 0;
         public int health = 100;
-        
+
+        public string itemIdForLeftHand = "";
+        public string itemIdForRightHand = "";
         public List<InventoryEntrySaveData> inventory = new List<InventoryEntrySaveData>();
     }
 }

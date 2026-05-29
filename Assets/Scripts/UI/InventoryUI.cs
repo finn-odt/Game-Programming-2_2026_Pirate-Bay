@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Configurations;
 using GameEvents;
+using SLTypes;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using UnityServiceLocator;
 using EngineCursor = UnityEngine.Cursor;
 using EngineCursorLockMode = UnityEngine.CursorLockMode;
 #if ENABLE_INPUT_SYSTEM 
@@ -21,19 +25,36 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private GameObject itemPrefab;
     
     [SerializeField] private Font pirateFont;
+
+    private IPlayer player;
     
     public InventoryItemDatabaseSO itemDatabase;
     public float dragDistanceThreshold;
 
     // action for opening/closing the inventory [bindings are set in Awake()]
-    //private readonly InputAction toggleInventoryAction = new("Toggle Inventory", InputActionType.Button);
+    private readonly InputAction toggleInventoryAction = new("Toggle Inventory", InputActionType.Button);
 
+    private struct Hand
+    {
+        public VisualElement parent;
+        public Image icon;
+        public Label quantity;
+        public Label itemId;
+    }
+    private struct HandElements
+    {
+        public VisualElement parent;
+        public Hand leftHand;
+        public Hand rightHand;
+    }
+
+    private static VisualElement root;
     private static VisualElement panel;
     private static ScrollView listScroller;
     private static VisualElement list;
-    private static Label emptyState;
     private static Label statusLabel;
     private static VisualElement details;
+    private static HandElements hands;
     private static bool isOpen;
     private static InventoryChangedEvent lastInventory;
 
@@ -71,14 +92,14 @@ public class InventoryUI : MonoBehaviour
             document = GetComponent<UIDocument>();
         }
 
-        //toggleInventoryAction.AddBinding("<Keyboard>/tab");
-        //toggleInventoryAction.AddBinding("<Gamepad>/leftShoulder");
+        toggleInventoryAction.AddBinding("<Keyboard>/tab");
+        toggleInventoryAction.AddBinding("<Gamepad>/leftShoulder");
     }
 
     private void OnEnable()
     {
-        //toggleInventoryAction.Enable();
-        //toggleInventoryAction.performed += OnToggleInventory;
+        toggleInventoryAction.Enable();
+        toggleInventoryAction.performed += OnToggleInventory;
 
         GameEventManager.AddListener<InventoryChangedEvent>(OnInventoryChanged);
         GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
@@ -93,8 +114,8 @@ public class InventoryUI : MonoBehaviour
         GameEventManager.RemoveListener<CloseInventoryEvent>(OnExternalCloseCommand);
         GameEventManager.RemoveListener<OpenInventoryEvent>(OnExternalOpenCommand);
 
-        //toggleInventoryAction.performed -= OnToggleInventory;
-        //toggleInventoryAction.Disable();
+        toggleInventoryAction.performed -= OnToggleInventory;
+        toggleInventoryAction.Disable();
     }
 
     private void OnExternalCloseCommand(CloseInventoryEvent gameEvent)
@@ -120,30 +141,22 @@ public class InventoryUI : MonoBehaviour
     private void Start()
     {
         BindDocument();
-        SetOpen(false);
-        
-#if ENABLE_INPUT_SYSTEM 
-        _playerInput = GetComponent<PlayerInput>();
-#else
-        Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
-#endif
-    }
-    
-#if ENABLE_INPUT_SYSTEM
-    public void OnToggleInventory(InputValue value)
-    {
-        Debug.Log("Hahahahah");
-        // only openable in Play-Mode
-        if (currentGameState != GameStateChangedEvent.GameState.Play && currentGameState != GameStateChangedEvent.GameState.Inventory)
-            return;
-        
-        SetOpen(!isOpen);
-        // isOpen is now set correctly, raise event for GameState
-        GameEventManager.Raise(new InventoryVisibilityChangeEvent(isOpen));
-    }
-#endif
 
-    /*private void OnToggleInventory(InputAction.CallbackContext context)
+        ServiceLocator.Global.Get(out player);
+
+        // load hand equipment
+        GameConfiguration.GetHandEquipmentData(out string leftItemID, out string rightItemID, out int leftQuantity, out int rightQuantity);
+        InventoryItemDataSO left = itemDatabase.GetItemById(leftItemID);
+        InventoryItemDataSO right = itemDatabase.GetItemById(rightItemID);
+        if(left != null)
+            TryEquipItemToHand(CreateGridCell(left, leftQuantity), true);
+        if(right != null)
+            TryEquipItemToHand(CreateGridCell(right, rightQuantity), false);
+        
+        SetOpen(false);
+    }
+
+    private void OnToggleInventory(InputAction.CallbackContext context)
     {
         // only openable in Play-Mode
         if (currentGameState != GameStateChangedEvent.GameState.Play && currentGameState != GameStateChangedEvent.GameState.Inventory)
@@ -152,18 +165,17 @@ public class InventoryUI : MonoBehaviour
         SetOpen(!isOpen);
         // isOpen is now set correctly, raise event for GameState
         GameEventManager.Raise(new InventoryVisibilityChangeEvent(isOpen));
-    }*/
+    }
 
     private void BindDocument()
     {
-        VisualElement root = document.rootVisualElement;
+        root = document.rootVisualElement;
         
         ApplyFontToAllTextElements(root, pirateFont);
         
         panel = root.Q<VisualElement>("inventory-panel");
         listScroller = root.Q<ScrollView>("inventory-scroll");
         list = root.Q<VisualElement>("inventory-grid");
-        emptyState = root.Q<Label>("empty-state");
         statusLabel = root.Q<Label>("status-label");
         
         dragGhost = root.Q<VisualElement>("inventory-slot-drag-ghost");
@@ -175,6 +187,18 @@ public class InventoryUI : MonoBehaviour
         itemDetails.Description = root.Q<Label>("inventory-details-description");
         itemDetails.Quantity = root.Q<Label>("inventory-details-quantity");
         itemDetails.DropButton = root.Q<Button>("drop-button");
+        
+        hands.parent = root.Q<VisualElement>("inventory-grid-hands");
+        // left hand
+        hands.leftHand.parent = hands.parent.Q<VisualElement>("left-hand-equip-slot");
+        hands.leftHand.icon = hands.leftHand.parent.Q<Image>(className: "inventory-slot-icon");
+        hands.leftHand.quantity = hands.leftHand.parent.Q<Label>(className: "inventory-slot-quantity");
+        hands.leftHand.itemId = hands.leftHand.parent.Q<Label>(className: "inventory-slot-hidden-id");
+        // right hand
+        hands.rightHand.parent = hands.parent.Q<VisualElement>("right-hand-equip-slot");
+        hands.rightHand.icon = hands.rightHand.parent.Q<Image>(className: "inventory-slot-icon");
+        hands.rightHand.quantity = hands.rightHand.parent.Q<Label>(className: "inventory-slot-quantity");
+        hands.rightHand.itemId = hands.rightHand.parent.Q<Label>(className: "inventory-slot-hidden-id");
 
         if (listScroller != null)
         {
@@ -203,15 +227,9 @@ public class InventoryUI : MonoBehaviour
     {
         isOpen = open;
 
-        // do or do not receive click events
-        if (document != null)
+        if (root != null)
         {
-            document.enabled = isOpen;
-        }
-        
-        if (panel != null)
-        {
-            panel.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
+            root.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         if (isOpen)
@@ -242,6 +260,8 @@ public class InventoryUI : MonoBehaviour
         {
             return;
         }
+        
+        Debug.LogWarning("Nr. 1");
 
         list.contentContainer.Clear();
         
@@ -250,14 +270,15 @@ public class InventoryUI : MonoBehaviour
             items = inventoryEvent.items;
         else
             items = Inventory.Instance.GetCollectedItems();
+        
+        Debug.LogWarning("Nr. 2");
 
         if (items == null || items.Count == 0)
         {
-            if (emptyState != null)
-            {
-                emptyState.style.display = DisplayStyle.Flex;
-            }
-
+            // no items in inventory (maybe show some text)
+        
+            Debug.LogWarning("Nr. 3");
+            
             listScroller.style.display = DisplayStyle.None;
 
             if (statusLabel != null)
@@ -267,43 +288,64 @@ public class InventoryUI : MonoBehaviour
 
             return;
         }
+        
+        Debug.LogWarning("Nr. 4");
 
-        if (emptyState != null)
-        {
-            emptyState.style.display = DisplayStyle.None;
-        }
+        // items in inventory (maybe disable "no items"-text)
 
         listScroller.style.display = DisplayStyle.Flex;
         
         // generate Left and Right Hand Equip Cells
-        VisualElement[] equipCells = CreateEquipCells();
-        foreach(VisualElement equipCell in equipCells)
-            list.contentContainer.Add(equipCell);
+        //VisualElement[] equipCells = CreateEquipCells();
+        //foreach(VisualElement equipCell in equipCells)
+            //list.contentContainer.Add(equipCell);
+        
+        Debug.LogWarning("Nr. 5");
 
         int totalItems = 0;
         for (int i = 0; i < items.Count; i++)
         {
+            Debug.LogWarning("Nr. 6");
             Inventory.InventoryListItem item = items[i];
             InventoryItemDataSO itemData = item.saveData;
 
             // update quantity of current selection for details
             if (itemData == currentSelectedItem && item.amount != currentSelectedQuantity)
                 currentSelectedQuantity = item.amount;
+            
+            Debug.LogWarning("Nr. 7");
 
             if (itemData == null)
             {
                 continue;
             }
+            
+            Debug.LogWarning("Nr. 8");
+            
+            // is this item in one of my hands? -> do not draw
+            if (itemData.ItemId == hands.leftHand.itemId.text || itemData.ItemId == hands.rightHand.itemId.text)
+                continue;
+            
+            Debug.LogWarning("Nr. 9");
 
             totalItems += item.amount;
             
             VisualElement gridCell = CreateGridCell(itemData, item.amount);
             list.contentContainer.Add(gridCell);
+            
+            gridCell.RegisterCallback<GeometryChangedEvent>(evt =>
+            {
+                Debug.Log($"Grid cell layout: {gridCell.worldBound}");
+            });
+            
+            Debug.LogWarning("Nr. 10");
 
             // set initial value for selected item
             if (i == 0 && currentSelectedItem == null)
                 OnSelectItem(itemData, item.amount, gridCell);
         }
+
+        Debug.LogWarning("Nr. End");
         
         UpdateDetails();
 
@@ -376,7 +418,7 @@ public class InventoryUI : MonoBehaviour
         hiddenID.text = item.ItemId;
         element.Add(hiddenID);
 
-        SetEventsForDragAndDrop(element);
+        SetEventsForDragAndDrop(element, false);
 
         return element;
     }
@@ -429,77 +471,97 @@ public class InventoryUI : MonoBehaviour
             });
     }
 
-    private void SetEventsForDragAndDrop(VisualElement element)
+    private void SetEventsForDragAndDrop(VisualElement element, bool forHands)
     {
         if (element == null)
             return;
         
-        element.RegisterCallback<PointerDownEvent>(evt =>
-        {
-            // left mouse button = primary pointer
-            if (evt.button != 0 || isDragging)
-                return;
+        element.RegisterCallback<PointerDownEvent>(OnDragPointerDown);
+        element.RegisterCallback<PointerMoveEvent>(OnDragPointerMove);
+        element.RegisterCallback<PointerUpEvent>(OnDragPointerUp);
+    }
 
-            element.CapturePointer(evt.pointerId);
+    private void OnDragPointerDown(PointerDownEvent evt)
+    {
+        VisualElement element = evt.currentTarget as VisualElement;
+        
+        // left mouse button = primary pointer
+        if (evt.button != 0 || isDragging)
+            return;
+
+        element.CapturePointer(evt.pointerId);
             
-            // Get InventoryItemData instance for this element
-            Label itemIdLabel = element.Q<Label>(className: "inventory-slot-hidden-id");
-            Label quantityLabel = element.Q<Label>(className: "inventory-slot-quantity");
-            if (itemIdLabel == null || quantityLabel == null)
-                return;
-            int quantity = Int32.Parse(quantityLabel.text.Remove(0, 1));
-            string itemID = itemIdLabel.text;
-            InventoryItemDataSO itemData = itemDatabase.GetItemById(itemID);
+        // Get InventoryItemData instance for this element
+        Label itemIdLabel = element.Q<Label>(className: "inventory-slot-hidden-id");
+        Label quantityLabel = element.Q<Label>(className: "inventory-slot-quantity");
+        if (itemIdLabel == null || quantityLabel == null)
+            return;
+        int quantity = Int32.Parse(quantityLabel.text.Remove(0, 1));
+        string itemID = itemIdLabel.text;
+        InventoryItemDataSO itemData = itemDatabase.GetItemById(itemID);
             
-            mousePointerIsDown = true;
-            mousePointerDownPosition = evt.position;
-            pendingDragElement = element;
-            pendingDragItem = itemData;
-            pendingDragQuantity = quantity;
+        mousePointerIsDown = true;
+        mousePointerDownPosition = evt.position;
+        pendingDragElement = element;
+        pendingDragItem = itemData;
+        pendingDragQuantity = quantity;
 
-            //StartDragging(element, evt.position);
-        });
+        //StartDragging(element, evt.position);
+    }
 
-        element.RegisterCallback<PointerMoveEvent>(evt =>
-        {
-            if (!mousePointerIsDown || pendingDragElement != element)
-                return;
+    private void OnDragPointerMove(PointerMoveEvent evt)
+    {
+        VisualElement element = evt.currentTarget as VisualElement;
+        
+        if (!mousePointerIsDown || pendingDragElement != element)
+            return;
             
-            if (!isDragging)
-            {
-                float distance = Vector2.Distance(mousePointerDownPosition, evt.position);
-
-                if (distance < dragDistanceThreshold)
-                    return;
-
-                OnSelectItem(pendingDragItem, pendingDragQuantity, element);
-                StartDragging(element, mousePointerDownPosition);
-            }
-
-            UpdateDragging(element, evt.position);
-        });
-
-        element.RegisterCallback<PointerUpEvent>(evt =>
+        if (!isDragging)
         {
-            if (!mousePointerIsDown || pendingDragElement == null || pendingDragElement != element)
+            float distance = Vector2.Distance(mousePointerDownPosition, evt.position);
+
+            if (distance < dragDistanceThreshold)
                 return;
 
-            element.ReleasePointer(evt.pointerId);
+            OnSelectItem(pendingDragItem, pendingDragQuantity, element);
+            StartDragging(element, mousePointerDownPosition);
+        }
 
-            if (isDragging)
-            {
-                StopDragging(element, evt.position); // validate target location here
-            }
-            else
-            {
-                OnSelectItem(pendingDragItem, pendingDragQuantity, element);
-            }
+        UpdateDragging(element, evt.position);
+    }
 
-            mousePointerIsDown = false;
-            pendingDragElement = null;
-            pendingDragItem = null;
-            pendingDragQuantity = 0;
-        });
+    private void OnDragPointerUp(PointerUpEvent evt)
+    {
+        VisualElement element = evt.currentTarget as VisualElement;
+        
+        if (!mousePointerIsDown || pendingDragElement == null || pendingDragElement != element)
+            return;
+
+        element.ReleasePointer(evt.pointerId);
+
+        if (isDragging)
+        {
+            StopDragging(element, evt.position); // validate target location here
+        }
+        else
+        {
+            OnSelectItem(pendingDragItem, pendingDragQuantity, element);
+        }
+
+        mousePointerIsDown = false;
+        pendingDragElement = null;
+        pendingDragItem = null;
+        pendingDragQuantity = 0;
+    }
+
+    private void UnsetEventsForDragAndDrop(VisualElement element)
+    {
+        if (element == null)
+            return;
+
+        element.UnregisterCallback<PointerDownEvent>(OnDragPointerDown);
+        element.UnregisterCallback<PointerMoveEvent>(OnDragPointerMove);
+        element.UnregisterCallback<PointerUpEvent>(OnDragPointerUp);
     }
 
     private void StartDragging(VisualElement element, Vector2 position)
@@ -512,8 +574,22 @@ public class InventoryUI : MonoBehaviour
         // Difference between mouse position and element's top-left corner.
         dragOffset = position - element.worldBound.position;  // use element (not dragGhost) to get correct offset
 
-        element.style.display = DisplayStyle.None;  // deactivate real element in list
-        
+        if (element.ClassListContains("hand-equip"))
+        {
+            if (element.ClassListContains("left"))
+            {
+                hands.leftHand.quantity.visible = false;
+                hands.leftHand.icon.visible = false;
+            }
+            else if (element.ClassListContains("right"))
+            {
+                hands.rightHand.quantity.visible = false;
+                hands.rightHand.icon.visible = false;
+            }
+        }
+        else
+            element.style.display = DisplayStyle.None; // deactivate real element in list
+
         dragGhost.style.display = DisplayStyle.Flex;  // activate drag ghost
         // Move the element above siblings while dragging.
         dragGhost.BringToFront();
@@ -554,12 +630,31 @@ public class InventoryUI : MonoBehaviour
 
         if (droppedInsideInventory)
         {
-            TryReorderInsideInventory(element);
+            bool droppedOnInventoryGrid = list.worldBound.Contains(position);
+            bool droppedOnLeftHand = hands.leftHand.parent.worldBound.Contains(position);
+            bool droppedOnRightHand = hands.rightHand.parent.worldBound.Contains(position);
+            
+            if (element.ClassListContains("hand-equip"))  // recover hand equip
+            {
+                if (element.ClassListContains("left"))
+                {
+                    hands.leftHand.quantity.visible = true;
+                    hands.leftHand.icon.visible = true;
+                }
+                else if (element.ClassListContains("right"))
+                {
+                    hands.rightHand.quantity.visible = true;
+                    hands.rightHand.icon.visible = true;
+                }
+            }
+
+            if (droppedOnInventoryGrid)  // reorder items
+                TryReorderInsideInventory(element, position);
+            else if (droppedOnLeftHand || droppedOnRightHand)  // equip item
+                TryEquipItemToHand(element, droppedOnLeftHand);
         }
-        else
-        {
+        else  // drop item
             DropItemIntoWorld(element, true);
-        }
 
         element.style.display = DisplayStyle.Flex;  // activate real element in list again
         dragGhost.style.display = DisplayStyle.None;  // deactivate drag ghost
@@ -576,6 +671,14 @@ public class InventoryUI : MonoBehaviour
             return;
         int quantity = Int32.Parse(quantityLabel.text.Remove(0, 1));
         string itemID = itemIdLabel.text;
+
+        bool inLeftHand = itemID == hands.leftHand.itemId.text;
+        bool inRightHand = itemID == hands.rightHand.itemId.text;
+        if (inLeftHand || inRightHand) // remove current equipped item
+        {
+            GameEventManager.Raise(new PlayerStripItemEvent(inLeftHand));
+            RemoveItemFromHand(inLeftHand, inRightHand);
+        }
 
         InventoryItemDataSO itemData = itemDatabase.GetItemById(itemID);
         
@@ -610,8 +713,178 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private float dropSpeed = 1.6f;
     [SerializeField] private Transform dropOrigin;
     
-    private void TryReorderInsideInventory(VisualElement element)
+    private void TryReorderInsideInventory(VisualElement element, Vector2 pointerWorldPosition)
     {
-        throw new NotImplementedException("TryReorderInsideInventory of InventoryUI.cs");
+        if (element == null || list == null)
+            return;
+        
+        Label itemIdLabel = element.Q<Label>(className: "inventory-slot-hidden-id");
+        Label quantityLabel = element.Q<Label>(className: "inventory-slot-quantity");
+        if (itemIdLabel == null || quantityLabel == null)
+            return;
+        string itemID = itemIdLabel.text;
+        int quantity = Int32.Parse(quantityLabel.text.Remove(0, 1));  // remove "x" from "x5"
+        InventoryItemDataSO itemData = itemDatabase.GetItemById(itemID);
+        
+        bool inLeftHand = itemID == hands.leftHand.itemId.text;
+        bool inRightHand = itemID == hands.rightHand.itemId.text;
+        
+        VisualElement container = list.contentContainer;
+
+        int targetIndex = GetInventoryInsertIndex(container, element, pointerWorldPosition);
+        
+        if (inLeftHand || inRightHand) // remove current equipped item
+        {
+            // if item is currently in hand -> clear hand to nothing & create new grid cell for item
+            GameEventManager.Raise(new PlayerStripItemEvent(inLeftHand));
+            RemoveItemFromHand(inLeftHand, inRightHand);
+            element = CreateGridCell(itemData, quantity);
+        }
+        
+        // If the dragged element is already in this parent, remove it first
+        // so the target index is applied cleanly.
+        if (element.parent == container)
+            element.RemoveFromHierarchy();
+
+        targetIndex = Mathf.Clamp(targetIndex, 0, container.childCount);
+        container.Insert(targetIndex, element);
+        element.style.display = DisplayStyle.Flex;
+    }
+    
+    private int GetInventoryInsertIndex(VisualElement container, VisualElement draggedElement, Vector2 pointerWorldPosition)
+    {
+        int index = 0;
+        int lastIndexInPointerRow = -1;
+
+        foreach (VisualElement child in container.Children())
+        {
+            if (child == draggedElement)
+                continue;
+
+            if (!child.ClassListContains("inventory-slot"))
+                continue;
+
+            Rect bounds = child.worldBound;
+
+            float childCenterX = bounds.xMin + bounds.width * 0.5f;
+            float childCenterY = bounds.yMin + bounds.height * 0.5f;
+
+            bool pointerIsInSameRow =
+                pointerWorldPosition.y >= bounds.yMin &&
+                pointerWorldPosition.y <= bounds.yMax;
+
+            if (pointerIsInSameRow)
+            {
+                lastIndexInPointerRow = index;
+
+                if (pointerWorldPosition.x < childCenterX)
+                    return index;
+            }
+            else if (lastIndexInPointerRow < 0 && pointerWorldPosition.y < childCenterY)
+            {
+                return index;
+            }
+
+            index++;
+        }
+
+        Debug.Log("Last");
+        if (lastIndexInPointerRow >= 0)
+            return lastIndexInPointerRow + 1;
+
+        return index;
+    }
+    
+    private void TryEquipItemToHand(VisualElement element, bool leftHand)
+    {
+        // remove current equipped item
+        GameEventManager.Raise(new PlayerStripItemEvent(leftHand));
+        
+        // retrieve data from element
+        Image iconImage =  element.Q<Image>(className: "inventory-slot-icon");
+        Label itemIdLabel = element.Q<Label>(className: "inventory-slot-hidden-id");
+        Label quantityLabel = element.Q<Label>(className: "inventory-slot-quantity");
+        if (itemIdLabel == null || quantityLabel == null)
+            return;
+        int quantity = Int32.Parse(quantityLabel.text.Remove(0, 1));
+        string itemID = itemIdLabel.text;
+        
+        if (leftHand)
+        {
+            hands.leftHand.icon.image = iconImage.image;
+            hands.leftHand.quantity.text = $"x{quantity}";
+            hands.leftHand.itemId.text = itemID;
+            SetEventsForDragAndDrop(hands.leftHand.parent, true);
+        }
+        else
+        {
+            hands.rightHand.icon.image = iconImage.image;
+            hands.rightHand.quantity.text = $"x{quantity}";
+            hands.rightHand.itemId.text = itemID;
+            SetEventsForDragAndDrop(hands.rightHand.parent, true);
+        }
+        EquipItemToPlayerHand(itemID, quantity, leftHand);
+        
+        // Remove old hand if hand was dropped on other hand
+        if (element.ClassListContains("hand-equip"))  // element that is dragged is also hand
+        {
+            bool isLeft = element.ClassListContains("left");
+            bool isRight = element.ClassListContains("right");
+            if (isLeft && leftHand || isRight && !leftHand)  // hand dropped on itself
+            {
+                return;
+            }
+            // Remove hand A that was now dropped on hand B from original spot
+            else if (!leftHand && isLeft || leftHand && isRight)
+            {
+                RemoveItemFromHand(!leftHand && isLeft, leftHand && isRight);
+                GameEventManager.Raise(new PlayerStripItemEvent(isLeft));
+            }
+        }
+        
+        // update inventory render
+        RenderInventory(lastInventory);
+    }
+
+    private void RemoveItemFromHand(bool leftHand, bool rightHand)
+    {
+        if (leftHand)
+        {
+            hands.leftHand.icon.image = null;
+            hands.leftHand.quantity.text = "";
+            hands.leftHand.itemId.text = "";
+            UnsetEventsForDragAndDrop(hands.leftHand.parent);
+        }
+        if (rightHand)
+        {
+            hands.rightHand.icon.image = null;
+            hands.rightHand.quantity.text = "";
+            hands.rightHand.itemId.text = "";
+            UnsetEventsForDragAndDrop(hands.rightHand.parent);
+        }
+        GameConfiguration.SaveHandEquipment(hands.leftHand.itemId.text, hands.rightHand.itemId.text);
+    }
+
+    private void EquipItemToPlayerHand(string itemID, int quantity, bool leftHand)
+    {
+        InventoryItemDataSO itemData = itemDatabase.GetItemById(itemID);
+
+        GameObject handEquip = leftHand ? player.LeftHandEquip : player.RightHandEquip;
+        GameObject equippedItem = Instantiate(itemPrefab, handEquip.transform.position, Quaternion.identity);
+        CollectableItem itemScript = equippedItem.GetComponentInChildren<CollectableItem>();
+        itemScript.InventoryItemData = itemData;
+        itemScript.amount = quantity;
+
+        Collider[] cols = equippedItem.GetComponents<Collider>();
+        if(cols != null && cols.Length > 0)
+            foreach(Collider col in cols)
+                col.enabled = false;
+        
+        Rigidbody rb = equippedItem.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.isKinematic = true;
+        
+        GameConfiguration.SaveHandEquipment(hands.leftHand.itemId.text, hands.rightHand.itemId.text);
+        GameEventManager.Raise(new PlayerEquipItemEvent(equippedItem, leftHand));
     }
 }

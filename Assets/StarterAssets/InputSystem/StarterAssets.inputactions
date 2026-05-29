@@ -86,33 +86,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "DeclineConv",
-                    "type": "Button",
-                    "id": "3d4c3e66-8d57-4564-afff-bf4ee72dce22",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "AgreeConv",
-                    "type": "Button",
-                    "id": "d0fde63d-01f4-4254-899b-192afda74225",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "ToggleInventory",
-                    "type": "Button",
-                    "id": "a0c5a681-21e8-446f-9204-edf29c0b186f",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -401,54 +374,45 @@
                     "action": "UseRightHand",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
+                }
+            ]
+        },
+        {
+            "name": "UI",
+            "id": "b1237d7a-d43b-4f24-8fe7-41c651cb8399",
+            "actions": [
                 {
-                    "name": "",
-                    "id": "d73c7941-5d6f-4f8f-abb7-744c60b2d007",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "",
+                    "name": "ToggleInventory",
+                    "type": "Button",
+                    "id": "f69b4eb9-5184-4e90-972d-4ac1d67c4125",
+                    "expectedControlType": "",
                     "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "DeclineConv",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7e2d4afe-ead8-4f3b-bdf0-bc259424b32f",
-                    "path": "<Keyboard>/backspace",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";KeyboardMouse",
-                    "action": "DeclineConv",
-                    "isComposite": false,
-                    "isPartOfComposite": false
+                    "initialStateCheck": false
                 },
                 {
-                    "name": "",
-                    "id": "26a0f871-7640-433e-8b6c-00c756339a46",
-                    "path": "<Gamepad>/buttonSouth",
+                    "name": "AgreeConv",
+                    "type": "Button",
+                    "id": "80ea56fe-f207-444f-bbc7-d15f99b3236d",
+                    "expectedControlType": "",
+                    "processors": "",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "AgreeConv",
-                    "isComposite": false,
-                    "isPartOfComposite": false
+                    "initialStateCheck": false
                 },
                 {
-                    "name": "",
-                    "id": "837f77aa-740d-4296-a733-b91c1d13d8f6",
-                    "path": "<Keyboard>/enter",
+                    "name": "DeclineConv",
+                    "type": "Button",
+                    "id": "c892b427-a29d-4b93-9679-d56c39a3d2fb",
+                    "expectedControlType": "",
+                    "processors": "",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";KeyboardMouse",
-                    "action": "AgreeConv",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
                 {
                     "name": "",
-                    "id": "1f26da62-5f77-4336-b269-b8116276b2ba",
+                    "id": "0bdd0ff2-c2de-4bd0-827b-b1ef64582a34",
                     "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",
@@ -459,12 +423,56 @@
                 },
                 {
                     "name": "",
-                    "id": "697a523c-ca5e-4c88-81f9-7a16249d4a36",
+                    "id": "b7cd1e5e-c05c-421c-9065-04d03e1a0a5d",
                     "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "ToggleInventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e77a9d1f-b409-4ea1-ab56-27c3cc1b9496",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "AgreeConv",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "981eeac4-03e8-4ac5-b48c-cadbc147e661",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KeyboardMouse",
+                    "action": "AgreeConv",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1fcb8874-560c-4bf1-a400-adebaebc93b8",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "DeclineConv",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7a2dc991-25de-4813-ada3-22d188253704",
+                    "path": "<Keyboard>/backspace",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KeyboardMouse",
+                    "action": "DeclineConv",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

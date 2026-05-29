@@ -21,19 +21,27 @@
             
             <ui:VisualElement class="inventory-display">
                 <ui:VisualElement class="inventory-list">
-                    <ui:Label name="empty-state" text="No items collected." class="empty-state" />
+                    <ui:VisualElement name="inventory-grid-hands" class="inventory-grid-hands">
+                            
+                        <ui:VisualElement class="left-hand-equip-slot hand-equip left" name="left-hand-equip-slot">
+                            <ui:Label class="equip-slot-title" text="Left Hand"/>
+                            <ui:Image class="inventory-slot-icon"/>
+                            <ui:Label class="inventory-slot-quantity" text=""/>
+                            <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
+                        </ui:VisualElement>
+                            
+                        <ui:VisualElement class="right-hand-equip-slot hand-equip right" name="right-hand-equip-slot">
+                            <ui:Label class="equip-slot-title" text="Right Hand"/>
+                            <ui:Image class="inventory-slot-icon"/>
+                            <ui:Label class="inventory-slot-quantity" text=""/>
+                            <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
+                        </ui:VisualElement>
+                            
+                    </ui:VisualElement>
                     <ui:ScrollView name="inventory-scroll" class="inventory-scroll">
                         <ui:VisualElement name="inventory-grid" class="inventory-grid">
                             
-                            <ui:VisualElement class="left-hand-equip-slot">
-                                <ui:Label class="equip-slot-title" text="Left Hand"/>
-                                <ui:Image class="inventory-slot-icon"/>
-                                <ui:Label class="inventory-slot-quantity" text="x5"/>
-                                <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
-                            </ui:VisualElement>
-                            
-                            <ui:VisualElement class="right-hand-equip-slot">
-                                <ui:Label class="equip-slot-title" text="Right Hand"/>
+                            <ui:VisualElement class="inventory-slot">
                                 <ui:Image class="inventory-slot-icon"/>
                                 <ui:Label class="inventory-slot-quantity" text="x5"/>
                                 <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>

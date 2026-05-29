@@ -127,7 +127,7 @@ public class UIManager : MonoBehaviour
             // do not draw, as air is full [no UI clutter]
             airVolumeFull.transform.parent.gameObject.SetActive(false);
         }
-        else if (percentage <= 0)  // EMPTY: fill red
+        else if (percentage <= 0)  // EMPTY: blink red-white
         {
             Debug.Log(timeSinceAirEmpty);
             timeSinceAirEmpty += Time.deltaTime;
@@ -151,6 +151,7 @@ public class UIManager : MonoBehaviour
         else  // Show Progress
         {
             timeSinceAirEmpty = 0;
+            airVolumeEmpty.color = Color.white;
             // draw bubbles with percentage
             airVolumeFull.transform.parent.gameObject.SetActive(true);
             airVolumeFull.fillAmount = percentage;

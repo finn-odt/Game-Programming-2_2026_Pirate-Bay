@@ -8,6 +8,7 @@ public class InventoryItemDataSO : ScriptableObject
     [SerializeField] private Mesh mesh;
     [SerializeField] private Material material;
     [SerializeField] private float meshScale = 1f;
+    [SerializeField] private Vector3 meshEulerRotation = Vector3.zero;
 
     [SerializeField] private string itemName;
     [SerializeField] private string description;
@@ -19,6 +20,7 @@ public class InventoryItemDataSO : ScriptableObject
     public string ItemId => itemId;
     public Mesh Mesh => mesh;
     public float MeshScale => meshScale;
+    public Vector3 MeshEulerRotation => meshEulerRotation;
     public Material Material => material;
     public string ItemName => itemName;
     public string Description => description;

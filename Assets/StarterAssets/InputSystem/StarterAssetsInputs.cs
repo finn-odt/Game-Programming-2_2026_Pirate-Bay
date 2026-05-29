@@ -13,6 +13,8 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 		public bool interact;
+		public bool useLeftHand;
+		public bool useRightHand;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -69,6 +71,16 @@ namespace StarterAssets
 
 			GameManager.Instance.RestartRequest(0.15f);
 		}
+
+		public void OnUseLeftHand(InputValue value)
+		{
+			UseLeftHandInput(value.isPressed);
+		}
+
+		public void OnUseRightHand(InputValue value)
+		{
+			UseRightHandInput(value.isPressed);
+		}
 #endif
 
 
@@ -95,6 +107,16 @@ namespace StarterAssets
 		public void InteractInput(bool newInteractState)
 		{
 			interact = newInteractState;
+		}
+
+		public void UseLeftHandInput(bool newInteractState)
+		{
+			useLeftHand = newInteractState;
+		}
+
+		public void UseRightHandInput(bool newInteractState)
+		{
+			useRightHand = newInteractState;
 		}
 	}
 	

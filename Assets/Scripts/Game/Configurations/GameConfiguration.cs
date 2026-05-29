@@ -85,6 +85,34 @@ namespace Configurations
             Data.inventory = saveData;
             Save();
         }
+        
+        public static void SaveHandEquipment(string itemIdLeftHand, string itemIdRightHand)
+        {
+            if (!ConfigIsLoaded)
+                Load();
+
+            Data.itemIdForLeftHand = itemIdLeftHand;
+            Data.itemIdForRightHand = itemIdRightHand;
+            Save();
+        }
+        
+        public static void GetHandEquipmentData(out string itemIdLeftHand, out string itemIdRightHand, out int itemQuantityLeftHand, out int itemQuantityRightHand)
+        {
+            if (!ConfigIsLoaded)
+                Load();
+
+            itemIdLeftHand = Data.itemIdForLeftHand;
+            itemIdRightHand = Data.itemIdForRightHand;
+            itemQuantityLeftHand = 0;
+            itemQuantityRightHand = 0;
+            foreach (InventoryEntrySaveData saveData in Data.inventory)
+            {
+                if(saveData.itemId == itemIdLeftHand)
+                    itemQuantityLeftHand = saveData.amount;
+                if(saveData.itemId == itemIdLeftHand)
+                    itemQuantityRightHand = saveData.amount;
+            }
+        }
 
         public static void SavePlayer(Vector3 pos)
         {

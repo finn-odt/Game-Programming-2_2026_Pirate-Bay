@@ -289,6 +289,7 @@ namespace StarterAssets
             
             GroundedCheck();
             Interact();
+            UseHands();
         }
 
         private void LateUpdate()
@@ -455,6 +456,18 @@ namespace StarterAssets
                 GameEventManager.Raise(new PlayerInteractionRequestEvent());
 
                 _input.interact = false;  // reset for repressing
+            }
+        }
+
+        private void UseHands()
+        {
+            if (_input.useLeftHand) 
+            {
+                Debug.Log("LEFT HAND IS USED");
+            }
+            else if(_input.useRightHand)
+            {
+                Debug.Log("RIGHT HAND IS USED");
             }
         }
 

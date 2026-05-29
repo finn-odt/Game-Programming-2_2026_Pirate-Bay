@@ -207,6 +207,14 @@
     padding: 4px;
 }
 
+.inventory-grid-hands {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-content: center;
+    padding: 4px;
+}
+
 .inventory-slot {
     width: 36px;
     height: 36px;
