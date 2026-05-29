@@ -27,14 +27,14 @@
                             <ui:Label class="equip-slot-title" text="Left Hand"/>
                             <ui:Image class="inventory-slot-icon"/>
                             <ui:Label class="inventory-slot-quantity" text=""/>
-                            <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
+                            <ui:Label class="inventory-slot-hidden-id" text=""/>
                         </ui:VisualElement>
                             
                         <ui:VisualElement class="right-hand-equip-slot hand-equip right" name="right-hand-equip-slot">
                             <ui:Label class="equip-slot-title" text="Right Hand"/>
                             <ui:Image class="inventory-slot-icon"/>
                             <ui:Label class="inventory-slot-quantity" text=""/>
-                            <ui:Label class="inventory-slot-hidden-id" text="ID Here"/>
+                            <ui:Label class="inventory-slot-hidden-id" text=""/>
                         </ui:VisualElement>
                             
                     </ui:VisualElement>

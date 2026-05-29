@@ -16,6 +16,10 @@ public class InventoryItemDataSO : ScriptableObject
     [SerializeField, Range(0, 5)] private int weight;
     [SerializeField, Range(0, 5)] private int efficiency;
     [SerializeField] private Texture2D icon;
+    
+    [SerializeField] private ItemUseBehaviourSO useBehaviour;
+    public bool HasUseBehaviour => useBehaviour != null;
+    public ItemUseBehaviourSO UseBehaviour => useBehaviour;
 
     public string ItemId => itemId;
     public Mesh Mesh => mesh;
@@ -28,4 +32,18 @@ public class InventoryItemDataSO : ScriptableObject
     public int Weight => weight;
     public int Efficiency => efficiency;
     public Texture2D Icon => icon;
+    
+    public void Use(ItemUseContext context)
+    {
+        if (useBehaviour == null)
+        {
+            Debug.Log($"{itemName} has no use behaviour.");
+            return;
+        }
+
+        if (!useBehaviour.CanUse(context))
+            return;
+
+        useBehaviour.Use(context);
+    }
 }

@@ -105,6 +105,8 @@ public class InventoryUI : MonoBehaviour
         GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
         GameEventManager.AddListener<CloseInventoryEvent>(OnExternalCloseCommand);
         GameEventManager.AddListener<OpenInventoryEvent>(OnExternalOpenCommand);
+        
+        GameEventManager.AddListener<RemoveItemFromHandForUseEvent>(OnItemRemoveDueToUse);
     }
 
     private void OnDisable()
@@ -113,6 +115,8 @@ public class InventoryUI : MonoBehaviour
         GameEventManager.RemoveListener<GameStateChangedEvent>(OnGameStateChange);
         GameEventManager.RemoveListener<CloseInventoryEvent>(OnExternalCloseCommand);
         GameEventManager.RemoveListener<OpenInventoryEvent>(OnExternalOpenCommand);
+        
+        GameEventManager.RemoveListener<RemoveItemFromHandForUseEvent>(OnItemRemoveDueToUse);
 
         toggleInventoryAction.performed -= OnToggleInventory;
         toggleInventoryAction.Disable();
@@ -846,6 +850,20 @@ public class InventoryUI : MonoBehaviour
         RenderInventory(lastInventory);
     }
 
+    private void OnItemRemoveDueToUse(RemoveItemFromHandForUseEvent e)
+    {
+        bool leftHand = e.itemData.ItemId == hands.leftHand.itemId.text;
+        bool rightHand = e.itemData.ItemId == hands.rightHand.itemId.text;
+        
+        int remaining = Inventory.Instance.Remove(e.itemData, 1);
+        
+        if(remaining <= 0)
+            RemoveItemFromHand(leftHand, rightHand);
+        else
+            UpdateHandQuantity(leftHand, remaining); 
+        
+    }
+
     private void RemoveItemFromHand(bool leftHand, bool rightHand)
     {
         if (leftHand)
@@ -863,6 +881,14 @@ public class InventoryUI : MonoBehaviour
             UnsetEventsForDragAndDrop(hands.rightHand.parent);
         }
         GameConfiguration.SaveHandEquipment(hands.leftHand.itemId.text, hands.rightHand.itemId.text);
+    }
+    
+    private void UpdateHandQuantity(bool leftHand, int quantity)
+    {
+        if (leftHand)
+            hands.leftHand.quantity.text = $"x{quantity}";
+        else
+            hands.rightHand.quantity.text = $"x{quantity}";
     }
 
     private void EquipItemToPlayerHand(string itemID, int quantity, bool leftHand)

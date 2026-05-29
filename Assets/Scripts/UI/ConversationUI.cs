@@ -85,7 +85,6 @@ public class ConversationUI : MonoBehaviour
     
     private void OnConversationRequest(ConversationUIEvent e)
     {
-        Debug.Log(e.message);
         SetOpen(e.isOpen, e.message);
     }
 

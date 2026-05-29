@@ -18,5 +18,7 @@ namespace SLTypes
         void TakeDamage(int amount);
 
         void SetInitialPosition(Vector3 pos);
+
+        public void UseItem(InventoryItemDataSO itemData, Transform useOrigin);
     }
 }

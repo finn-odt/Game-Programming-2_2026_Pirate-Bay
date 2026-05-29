@@ -78,6 +78,8 @@ namespace Player
             
             GameEventManager.AddListener<PlayerEquipItemEvent>(EquipItemToHand);
             GameEventManager.AddListener<PlayerStripItemEvent>(StipItemFromHand);
+            
+            GameEventManager.AddListener<PlayerUseHandRequestEvent>(OnHandUseRequest);
         }
 
         void OnDisable()
@@ -90,6 +92,26 @@ namespace Player
             
             GameEventManager.RemoveListener<PlayerEquipItemEvent>(EquipItemToHand);
             GameEventManager.RemoveListener<PlayerStripItemEvent>(StipItemFromHand);
+            
+            GameEventManager.RemoveListener<PlayerUseHandRequestEvent>(OnHandUseRequest);
+        }
+
+        private void OnHandUseRequest(PlayerUseHandRequestEvent e)
+        {
+            GameObject parent = e.leftHand ? leftHandEquipParent : rightHandEquipParent;
+            
+            if(parent == null)
+                return;
+            
+            CollectableItem itemScript = parent?.GetComponentInChildren<CollectableItem>();
+            
+            if(itemScript == null)
+                return;
+            
+            InventoryItemDataSO itemData = itemScript.InventoryItemData;
+            Transform position = parent.transform;
+            
+            UseItem(itemData, position);
         }
 
         private void OnCoinCollection(CollectedCoinEvent e)
@@ -137,6 +159,21 @@ namespace Player
         public void SetInitialCoins(int coins)
         {
             collectedCoins.SetValue(coins);
+        }
+        
+        public void UseItem(InventoryItemDataSO itemData, Transform useOrigin)
+        {
+            if (itemData == null || !itemData.HasUseBehaviour)
+                return;
+
+            ItemUseContext context = new ItemUseContext(
+                user: this,  // give this IHuman as reference
+                itemData: itemData,
+                aimDirection: transform.forward,
+                useOrigin: useOrigin
+            );
+
+            itemData.Use(context);
         }
 
     }

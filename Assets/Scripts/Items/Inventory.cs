@@ -143,13 +143,16 @@ public class Inventory : MonoBehaviour
     /// of targetItem than the amount by that it should
     /// be reduced.
     /// </exception>
-    public void Remove(InventoryItemDataSO itemData, int amount)
+    public int Remove(InventoryItemDataSO itemData, int amount)
     {
+        int endAmount = 0;
+        
         for(int i = baggedItems.Count - 1; i >= 0; i--)
         {
             InventoryListItem item = baggedItems[i];
             if (item.saveData.ItemId == itemData.ItemId)
             {
+                endAmount = item.amount - amount;
                 if(item.amount < amount)
                     throw new NotEnoughItemsException(item.saveData.ItemName);
 
@@ -162,12 +165,15 @@ public class Inventory : MonoBehaviour
                 {
                     baggedItems.Remove(item);  // remove completely
                 }
+                break;
             }
         }
             
         // raise Inventory Changed Event for UI
         GameEventManager.Raise(new InventoryChangedEvent(baggedItems, itemDatabase));
         SaveInventory();
+        
+        return endAmount;
     }
     
     /// <summary>
@@ -179,14 +185,17 @@ public class Inventory : MonoBehaviour
     /// of targetItem than the amount by that it should
     /// be reduced.
     /// </exception>
-    public void Remove(CollectableItem targetItem, int amount)
+    public int Remove(CollectableItem targetItem, int amount)
     {
+        int endAmount = 0;
+        
         for(int i = baggedItems.Count - 1; i >= 0; i--)
         {
             InventoryListItem item = baggedItems[i];
             
             if (item.saveData.ItemId == targetItem.InventoryItemData.ItemId)
             {
+                endAmount = item.amount - amount;
                 if(item.amount < amount)
                     throw new NotEnoughItemsException(item.saveData.ItemName);
                 
@@ -205,5 +214,7 @@ public class Inventory : MonoBehaviour
         // raise Inventory Changed Event for UI
         GameEventManager.Raise(new InventoryChangedEvent(baggedItems, itemDatabase));
         SaveInventory();
+        
+        return endAmount;
     }
 }

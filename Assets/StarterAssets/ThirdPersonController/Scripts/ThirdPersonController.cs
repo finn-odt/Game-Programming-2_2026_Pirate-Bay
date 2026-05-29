@@ -464,10 +464,14 @@ namespace StarterAssets
             if (_input.useLeftHand) 
             {
                 Debug.Log("LEFT HAND IS USED");
+                GameEventManager.Raise(new PlayerUseHandRequestEvent(true));
+                _input.useLeftHand = false;
             }
-            else if(_input.useRightHand)
+            if(_input.useRightHand)
             {
                 Debug.Log("RIGHT HAND IS USED");
+                GameEventManager.Raise(new PlayerUseHandRequestEvent(false));
+                _input.useRightHand = false;
             }
         }
 

@@ -81,6 +81,9 @@ public class CollectableItem : IInteractable
 
         meshGameObject.transform.localScale = Vector3.one * InventoryItemData.MeshScale;
         meshGameObject.transform.localRotation = Quaternion.LookRotation(InventoryItemData.MeshEulerRotation);
+        
+        if(InventoryItemData.HasUseBehaviour)
+            InventoryItemData.UseBehaviour.item = this.gameObject;  // set item to be usable
     }
 
     protected override void OnPlayerInteraction(PlayerInteractionRequestEvent e)

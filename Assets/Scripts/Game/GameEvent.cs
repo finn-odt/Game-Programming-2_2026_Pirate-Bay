@@ -375,5 +375,35 @@ namespace GameEvents
         }
     }
     
+    public class PlayerUseHandRequestEvent : GameEvent
+    {
+        public readonly bool leftHand;
+        
+        public PlayerUseHandRequestEvent(bool leftHand)
+        {
+            this.leftHand = leftHand;
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class RemoveItemFromHandForUseEvent : GameEvent
+    {
+        public readonly InventoryItemDataSO itemData;
+        
+        public RemoveItemFromHandForUseEvent(InventoryItemDataSO itemData)
+        {
+            this.itemData = itemData;
+        }
+        
+        public override bool isValid ()
+        {
+            return itemData != null;
+        }
+    }
+    
 
 }

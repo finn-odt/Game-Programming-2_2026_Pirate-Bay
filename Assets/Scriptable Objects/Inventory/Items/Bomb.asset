@@ -16,6 +16,7 @@ MonoBehaviour:
   mesh: {fileID: 4300000, guid: d1e8477c1d62b4eb2950689921e7ef58, type: 3}
   material: {fileID: 2100000, guid: 1c8657c6b5cdc4eb5bcac1968488b356, type: 2}
   meshScale: 0.21
+  meshEulerRotation: {x: 0, y: 0, z: 0}
   itemName: Bomb
   description: Explodes on impact after being thrown and deals massive damage to
     nearby lifeforms
@@ -23,3 +24,4 @@ MonoBehaviour:
   weight: 2
   efficiency: 5
   icon: {fileID: 2800000, guid: a68fb851c68cb53449582671ced4970b, type: 3}
+  useBehaviour: {fileID: 11400000, guid: 505b7b4ae9b44b2449f7e3a388a77027, type: 2}
