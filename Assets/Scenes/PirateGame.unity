@@ -115922,6 +115922,7 @@ GameObject:
   - component: {fileID: 776161954}
   - component: {fileID: 776161959}
   - component: {fileID: 776161960}
+  - component: {fileID: 776161962}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -116105,6 +116106,18 @@ MonoBehaviour:
   clearViewOffset: {x: 0, y: 0.85, z: 0}
   obstructionTransparentMaterial: {fileID: 2100000, guid: 2be7b0b5cd1ac0e4d9c6c8e3b6fab8fe, type: 2}
   layersToExclude: 0600000007000000080000000d00000003000000
+--- !u!114 &776161962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776161953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33fc06845c7a4fb0b376f26e104f7a64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PointerRaycastDebugger
 --- !u!1001 &776199781
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -371565,6 +371578,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 650017113}
     m_Modifications:
+    - target: {fileID: 2456193501035547454, guid: 70aa97c63e055ef4bb02cee4e15bbfdd, type: 3}
+      propertyPath: useSavedPlayerPosition
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4711225017379094187, guid: 70aa97c63e055ef4bb02cee4e15bbfdd, type: 3}
       propertyPath: m_Camera
       value: 

@@ -1,4 +1,5 @@
-﻿using GameEvents;
+﻿using System.Collections;
+using GameEvents;
 using Player;
 using SLTypes;
 using TriInspector;
@@ -102,6 +103,9 @@ namespace StarterAssets
         private readonly InputAction dToggleFlyingMode = new("Toggle Flying Mode", InputActionType.Button);
         private bool dIsFlying = false;
 
+        private bool berserkModeActive = false;
+        private float berserkFactor;
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
@@ -156,6 +160,8 @@ namespace StarterAssets
             GameEventManager.AddListener<SensitivityChangeEvent>(OnSensitivityChange);
             
             GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
+            
+            GameEventManager.AddListener<PlayerBerserkEvent>(OnBerserkMode);
 
             if (dFlyMode)
             {
@@ -169,7 +175,9 @@ namespace StarterAssets
         {
             GameEventManager.RemoveListener<SensitivityChangeEvent>(OnSensitivityChange);
             
-            GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
+            GameEventManager.RemoveListener<GameStateChangedEvent>(OnGameStateChange);
+            
+            GameEventManager.RemoveListener<PlayerBerserkEvent>(OnBerserkMode);
             
             if (dFlyMode)
             {
@@ -177,6 +185,22 @@ namespace StarterAssets
                 dToggleFlyingMode.canceled -= OnToggleFlying;
                 dToggleFlyingMode.Disable();
             }
+        }
+
+        private void OnBerserkMode(PlayerBerserkEvent e)
+        {
+            if (berserkModeActive)
+                return;
+            
+            berserkModeActive = true;
+            berserkFactor = e.factor;
+            StartCoroutine(StopBerserkMode(e.duration));
+        }
+
+        private IEnumerator StopBerserkMode(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            berserkModeActive = false;
         }
 
         private void OnToggleFlying(InputAction.CallbackContext context)
@@ -366,6 +390,15 @@ namespace StarterAssets
 
                 float sensitivityX = IsCurrentDeviceMouse ? mouseSensitivityX : gamepadSensitivityX;
                 float sensitivityY = IsCurrentDeviceMouse ? mouseSensitivityY : gamepadSensitivityY;
+                
+                // -- BERSERK MODE --
+                if (berserkModeActive)
+                {
+                    // add strength when berserkFactor > 1, else subtract
+                    int sign = berserkFactor >= 1 ? 1 : -1;
+                    sensitivityX += sign * berserkFactor / 100f;
+                    sensitivityY += sign * berserkFactor / 100f;
+                }
 
                 _cinemachineTargetYaw += _input.look.x * sensitivityX * deltaTimeMultiplier;
                 _cinemachineTargetPitch += _input.look.y * sensitivityY * deltaTimeMultiplier;
@@ -384,12 +417,17 @@ namespace StarterAssets
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+            
+            // -- BERSERK MODE --
+            if (berserkModeActive)
+                targetSpeed *= berserkFactor;
 
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
             // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is no input, set the target speed to 0
-            if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+            if (_input.move == Vector2.zero)
+                targetSpeed = 0.0f;
 
             // a reference to the players current horizontal velocity
             float currentHorizontalSpeed = _input.move == Vector2.zero ? 0.0f : _speed;
@@ -498,8 +536,14 @@ namespace StarterAssets
                 // Jump
                 if (_input.jump && _jumpTimeoutDelta <= 0.0f)
                 {
+                    float height = JumpHeight;
+                    
+                    // -- BERSERK MODE --
+                    if (berserkModeActive)
+                        height *= berserkFactor;
+                    
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
-                    _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+                    _verticalVelocity = Mathf.Sqrt(height * -2f * Gravity);
 
                     // update animator if using character
                     if (_hasAnimator)

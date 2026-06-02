@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b080f2ae57224ec484a343bf3385ec63, type: 3}
-  m_Name: BombUse
+  m_Name: SmokeGrenadeUse
   m_EditorClassIdentifier: Assembly-CSharp::ThrowExplosiveUseBehaviourSO
   item: {fileID: 0}
   wasUsed: 0
-  explosionEffectEnabled: 1
-  smokeEffectEnabled: 0
+  explosionEffectEnabled: 0
+  smokeEffectEnabled: 1
   throwForce: 15
-  explosionEffectPrefab: {fileID: 1607639662943796, guid: 3e22210b0470bfa4aad5de0bedce25e8, type: 3}
-  smokeEffectPrefab: {fileID: 0}
+  explosionEffectPrefab: {fileID: 0}
+  smokeEffectPrefab: {fileID: 1829163952570794, guid: f171ac3dbb620c44e81cd88ddee1cbbd, type: 3}

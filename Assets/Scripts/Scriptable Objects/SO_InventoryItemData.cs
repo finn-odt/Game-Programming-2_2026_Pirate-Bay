@@ -32,18 +32,4 @@ public class InventoryItemDataSO : ScriptableObject
     public int Weight => weight;
     public int Efficiency => efficiency;
     public Texture2D Icon => icon;
-    
-    public void Use(ItemUseContext context)
-    {
-        if (useBehaviour == null)
-        {
-            Debug.Log($"{itemName} has no use behaviour.");
-            return;
-        }
-
-        if (!useBehaviour.CanUse(context))
-            return;
-
-        useBehaviour.Use(context);
-    }
 }

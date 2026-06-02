@@ -74,12 +74,18 @@ namespace StarterAssets
 
 		public void OnUseLeftHand(InputValue value)
 		{
-			UseLeftHandInput(value.isPressed);
+			if (!value.isPressed)
+				return;
+			
+			UseLeftHandInput(true);
 		}
 
 		public void OnUseRightHand(InputValue value)
 		{
-			UseRightHandInput(value.isPressed);
+			if (!value.isPressed)
+				return;
+			
+			UseRightHandInput(true);
 		}
 #endif
 
@@ -111,11 +117,13 @@ namespace StarterAssets
 
 		public void UseLeftHandInput(bool newInteractState)
 		{
+			Debug.Log("Left Hand");
 			useLeftHand = newInteractState;
 		}
 
 		public void UseRightHandInput(bool newInteractState)
 		{
+			Debug.Log("Right Hand");
 			useRightHand = newInteractState;
 		}
 	}

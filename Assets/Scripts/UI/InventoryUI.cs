@@ -264,8 +264,6 @@ public class InventoryUI : MonoBehaviour
         {
             return;
         }
-        
-        Debug.LogWarning("Nr. 1");
 
         list.contentContainer.Clear();
         
@@ -274,14 +272,10 @@ public class InventoryUI : MonoBehaviour
             items = inventoryEvent.items;
         else
             items = Inventory.Instance.GetCollectedItems();
-        
-        Debug.LogWarning("Nr. 2");
 
         if (items == null || items.Count == 0)
         {
             // no items in inventory (maybe show some text)
-        
-            Debug.LogWarning("Nr. 3");
             
             listScroller.style.display = DisplayStyle.None;
 
@@ -292,8 +286,6 @@ public class InventoryUI : MonoBehaviour
 
             return;
         }
-        
-        Debug.LogWarning("Nr. 4");
 
         // items in inventory (maybe disable "no items"-text)
 
@@ -303,53 +295,35 @@ public class InventoryUI : MonoBehaviour
         //VisualElement[] equipCells = CreateEquipCells();
         //foreach(VisualElement equipCell in equipCells)
             //list.contentContainer.Add(equipCell);
-        
-        Debug.LogWarning("Nr. 5");
 
         int totalItems = 0;
         for (int i = 0; i < items.Count; i++)
         {
-            Debug.LogWarning("Nr. 6");
             Inventory.InventoryListItem item = items[i];
             InventoryItemDataSO itemData = item.saveData;
 
             // update quantity of current selection for details
             if (itemData == currentSelectedItem && item.amount != currentSelectedQuantity)
                 currentSelectedQuantity = item.amount;
-            
-            Debug.LogWarning("Nr. 7");
 
             if (itemData == null)
             {
                 continue;
             }
             
-            Debug.LogWarning("Nr. 8");
-            
             // is this item in one of my hands? -> do not draw
             if (itemData.ItemId == hands.leftHand.itemId.text || itemData.ItemId == hands.rightHand.itemId.text)
                 continue;
-            
-            Debug.LogWarning("Nr. 9");
 
             totalItems += item.amount;
             
             VisualElement gridCell = CreateGridCell(itemData, item.amount);
             list.contentContainer.Add(gridCell);
-            
-            gridCell.RegisterCallback<GeometryChangedEvent>(evt =>
-            {
-                Debug.Log($"Grid cell layout: {gridCell.worldBound}");
-            });
-            
-            Debug.LogWarning("Nr. 10");
 
             // set initial value for selected item
             if (i == 0 && currentSelectedItem == null)
                 OnSelectItem(itemData, item.amount, gridCell);
         }
-
-        Debug.LogWarning("Nr. End");
         
         UpdateDetails();
 
@@ -856,12 +830,21 @@ public class InventoryUI : MonoBehaviour
         bool rightHand = e.itemData.ItemId == hands.rightHand.itemId.text;
         
         int remaining = Inventory.Instance.Remove(e.itemData, 1);
+
+        // remove item from hand without destroying it
+        GameEventManager.Raise(new PlayerStripItemEvent(leftHand, true));
         
         if(remaining <= 0)
-            RemoveItemFromHand(leftHand, rightHand);
+            RemoveItemFromHand(leftHand, rightHand);  // remove from UI
         else
-            UpdateHandQuantity(leftHand, remaining); 
-        
+        {
+            UpdateHandEquipment(leftHand, remaining); // update amount in UI
+            // generate new GameObject for Player Hand
+            string leftItemID = hands.leftHand.itemId.text;
+            string rightItemID = hands.rightHand.itemId.text;
+            EquipItemToPlayerHand(leftHand ? leftItemID : rightItemID, remaining, leftHand);
+        }
+
     }
 
     private void RemoveItemFromHand(bool leftHand, bool rightHand)
@@ -883,7 +866,7 @@ public class InventoryUI : MonoBehaviour
         GameConfiguration.SaveHandEquipment(hands.leftHand.itemId.text, hands.rightHand.itemId.text);
     }
     
-    private void UpdateHandQuantity(bool leftHand, int quantity)
+    private void UpdateHandEquipment(bool leftHand, int quantity)
     {
         if (leftHand)
             hands.leftHand.quantity.text = $"x{quantity}";

@@ -343,6 +343,21 @@ namespace GameEvents
         }
     }
     
+    public class PlayerBerserkEvent : GameEvent
+    {
+        public readonly float factor, duration;
+        public PlayerBerserkEvent(float factor, float duration)
+        {
+            this.factor = factor;
+            this.duration = duration;
+        }
+        
+        public override bool isValid ()
+        {
+            return factor > 1f;
+        }
+    }
+    
     public class PlayerEquipItemEvent : GameEvent
     {
         public readonly GameObject item;
@@ -363,10 +378,12 @@ namespace GameEvents
     public class PlayerStripItemEvent : GameEvent
     {
         public readonly bool leftHand;
+        public readonly bool doNotDestroy;
         
-        public PlayerStripItemEvent(bool leftHand)
+        public PlayerStripItemEvent(bool leftHand, bool doNotDestroy=false)
         {
             this.leftHand = leftHand;
+            this.doNotDestroy = doNotDestroy;
         }
         
         public override bool isValid ()

@@ -16,9 +16,11 @@ MonoBehaviour:
   mesh: {fileID: 4300000, guid: 2a7aeccaf51cb44258e96e4127ac8d7e, type: 3}
   material: {fileID: 2100000, guid: 6b051bc964265438b9edf8fb79c57ccb, type: 2}
   meshScale: 0.21
+  meshEulerRotation: {x: 0, y: 0, z: 0}
   itemName: Potion (Health)
   description: Increases health if individual is wounded
   shopCost: 40
   weight: 1
   efficiency: 2
   icon: {fileID: 2800000, guid: d4fa8bdd6652f304481e2e47d339eb3d, type: 3}
+  useBehaviour: {fileID: 11400000, guid: 68ba590c0439ce94fb1367ec69e98331, type: 2}

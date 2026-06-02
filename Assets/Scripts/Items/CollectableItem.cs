@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using GameEvents;
 using UnityConstantsGenerator;
 using UnityEngine;
@@ -21,6 +22,45 @@ public class CollectableItem : IInteractable
     //private float sleepVelocityThreshold = 0.2f;
     //private bool hasTouchedGround;
 
+    public delegate void ColliderCallbackDelegate(GameObject actor, Collision other, bool isInside);
+
+    private ColliderCallbackDelegate _delegate;
+    
+    public ItemUseBehaviourSO runtimeUseBehaviour;
+
+    public void AddCollisionListener(ColliderCallbackDelegate callback)
+    {
+        _delegate = callback;
+    }
+    
+    public void RemoveCollisionListener(ColliderCallbackDelegate callback)
+    {
+        if (_delegate != callback)
+            return;
+
+        _delegate = null;
+    }
+    
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("Collision Detection ENTER - EXTERN");
+        
+        if(_delegate != null)
+            _delegate(gameObject, collision, true);
+    }
+    
+    private void OnCollisionExit(Collision collision)
+    {
+        Debug.Log("Collision Detection EXIT - EXTERN");
+        if(_delegate != null)
+            _delegate(gameObject, collision, false);
+    }
+
+    private void OnDestroy()
+    {
+        RemoveCollisionListener(null);
+    }
+    
     void Update()
     {
         // if item falls through ground when being placed
@@ -80,10 +120,17 @@ public class CollectableItem : IInteractable
         meshRenderer.sharedMaterial = InventoryItemData.Material;
 
         meshGameObject.transform.localScale = Vector3.one * InventoryItemData.MeshScale;
-        meshGameObject.transform.localRotation = Quaternion.LookRotation(InventoryItemData.MeshEulerRotation);
+        if(InventoryItemData.MeshEulerRotation != Vector3.zero)
+            meshGameObject.transform.localRotation = Quaternion.Euler(InventoryItemData.MeshEulerRotation);
         
-        if(InventoryItemData.HasUseBehaviour)
-            InventoryItemData.UseBehaviour.item = this.gameObject;  // set item to be usable
+        // set item to be usable by UseBehaviour
+        if (InventoryItemData.HasUseBehaviour)
+        {
+            var runtimeUseBehaviour = Instantiate(InventoryItemData.UseBehaviour);
+            runtimeUseBehaviour.item = this.gameObject;
+            // Assign it somewhere, e.g. a field on this item
+            this.runtimeUseBehaviour = runtimeUseBehaviour;
+        }
     }
 
     protected override void OnPlayerInteraction(PlayerInteractionRequestEvent e)

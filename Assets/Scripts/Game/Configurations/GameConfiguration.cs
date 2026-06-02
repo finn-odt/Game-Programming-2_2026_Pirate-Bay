@@ -109,7 +109,7 @@ namespace Configurations
             {
                 if(saveData.itemId == itemIdLeftHand)
                     itemQuantityLeftHand = saveData.amount;
-                if(saveData.itemId == itemIdLeftHand)
+                if(saveData.itemId == itemIdRightHand)
                     itemQuantityRightHand = saveData.amount;
             }
         }

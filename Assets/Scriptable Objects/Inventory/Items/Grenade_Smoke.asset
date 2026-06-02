@@ -16,9 +16,11 @@ MonoBehaviour:
   mesh: {fileID: 4300000, guid: 9a38c879ddeb74214b97b361e8e5fee9, type: 3}
   material: {fileID: 2100000, guid: 1c8657c6b5cdc4eb5bcac1968488b356, type: 2}
   meshScale: 0.21
+  meshEulerRotation: {x: 0, y: 0, z: 0}
   itemName: Smoke Grenade
   description: Creates smoke on impact after being thrown that will block sight
   shopCost: 50
   weight: 2
   efficiency: 3
   icon: {fileID: 2800000, guid: 940d4420ffecb6249a25a1912976a565, type: 3}
+  useBehaviour: {fileID: 11400000, guid: c9b1eaf46c1bc6144838d1d28b9ff58c, type: 2}

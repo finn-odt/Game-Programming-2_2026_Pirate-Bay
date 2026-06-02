@@ -39,10 +39,6 @@ namespace Player
         {
             ServiceLocator.Global.Register<IPlayer>(this);
         }
-
-        private void Start()
-        {
-        }
         
         public void EquipItemToHand(PlayerEquipItemEvent e)
         {
@@ -54,17 +50,24 @@ namespace Player
 
             e.item.transform.localPosition = Vector3.zero;
             e.item.transform.localEulerAngles = Vector3.zero;  // !e.leftHand ? new Vector3(0, 0, 180f) :
-
-            Debug.LogWarning($"WorldPos: {e.item.transform.position}");
-            Debug.LogWarning($"LocalPos: {e.item.transform.localPosition}");
         }
         
-        public void StipItemFromHand(PlayerStripItemEvent e)
+        /// <summary>
+        /// This method removes the item in the specified hand
+        /// by either setting parent = null or calling Destroy()
+        /// on the Game Object.
+        /// </summary>
+        /// <param name="e">Event Data</param>
+        /// <param name="doNotDestroy">[default: false] Deparent the item, but do not call Destroy() on it</param>
+        public void StripItemFromHand(PlayerStripItemEvent e)
         {
             GameObject parent = e.leftHand ? leftHandEquipParent : rightHandEquipParent;
             foreach (Transform child in parent.transform)
             {
-                Destroy(child.gameObject);
+                if (e.doNotDestroy)
+                    child.parent = null;
+                else
+                    Destroy(child.gameObject);
             }
         }
 
@@ -77,7 +80,7 @@ namespace Player
             GameEventManager.AddListener<PlayerHealEvent>(OnHealing);
             
             GameEventManager.AddListener<PlayerEquipItemEvent>(EquipItemToHand);
-            GameEventManager.AddListener<PlayerStripItemEvent>(StipItemFromHand);
+            GameEventManager.AddListener<PlayerStripItemEvent>(StripItemFromHand);
             
             GameEventManager.AddListener<PlayerUseHandRequestEvent>(OnHandUseRequest);
         }
@@ -91,7 +94,7 @@ namespace Player
             GameEventManager.RemoveListener<PlayerHealEvent>(OnHealing);
             
             GameEventManager.RemoveListener<PlayerEquipItemEvent>(EquipItemToHand);
-            GameEventManager.RemoveListener<PlayerStripItemEvent>(StipItemFromHand);
+            GameEventManager.RemoveListener<PlayerStripItemEvent>(StripItemFromHand);
             
             GameEventManager.RemoveListener<PlayerUseHandRequestEvent>(OnHandUseRequest);
         }
@@ -99,19 +102,26 @@ namespace Player
         private void OnHandUseRequest(PlayerUseHandRequestEvent e)
         {
             GameObject parent = e.leftHand ? leftHandEquipParent : rightHandEquipParent;
-            
-            if(parent == null)
+
+            if (parent == null || parent.transform.childCount == 0)
+            {
+                Debug.LogWarning("Currently no usable item in player's hand");
                 return;
-            
+            }
+
             CollectableItem itemScript = parent?.GetComponentInChildren<CollectableItem>();
-            
-            if(itemScript == null)
+
+            if (itemScript == null)
+            {
+                Debug.LogWarning("Currently no CollectableItem in player's hand");
                 return;
-            
+            }
+
+            ItemUseBehaviourSO useBehaviour = itemScript.runtimeUseBehaviour;
             InventoryItemDataSO itemData = itemScript.InventoryItemData;
             Transform position = parent.transform;
             
-            UseItem(itemData, position);
+            UseItem(useBehaviour, itemData, position);
         }
 
         private void OnCoinCollection(CollectedCoinEvent e)
@@ -161,19 +171,22 @@ namespace Player
             collectedCoins.SetValue(coins);
         }
         
-        public void UseItem(InventoryItemDataSO itemData, Transform useOrigin)
+        public void UseItem(ItemUseBehaviourSO useBehaviour, InventoryItemDataSO itemData, Transform useOrigin)
         {
             if (itemData == null || !itemData.HasUseBehaviour)
+            {
+                Debug.LogWarning("Current held item has no behaviour");
                 return;
+            }
 
             ItemUseContext context = new ItemUseContext(
                 user: this,  // give this IHuman as reference
                 itemData: itemData,
-                aimDirection: transform.forward,
+                aimDirection: transform.forward + new Vector3(0, 0.5f, 0),
                 useOrigin: useOrigin
             );
 
-            itemData.Use(context);
+            useBehaviour.Use(context);
         }
 
     }
