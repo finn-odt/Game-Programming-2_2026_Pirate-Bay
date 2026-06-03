@@ -19,6 +19,6 @@ namespace SLTypes
 
         void SetInitialPosition(Vector3 pos);
 
-        public void UseItem(ItemUseBehaviourSO useBehaviour, InventoryItemDataSO itemData, Transform useOrigin);
+        public void UseItem(ItemUseBehaviourSO useBehaviour, bool leftHand, InventoryItemDataSO itemData, Transform useOrigin);
     }
 }

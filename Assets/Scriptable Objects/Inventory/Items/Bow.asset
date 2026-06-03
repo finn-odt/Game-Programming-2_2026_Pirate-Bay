@@ -23,3 +23,4 @@ MonoBehaviour:
   weight: 4
   efficiency: 5
   icon: {fileID: 2800000, guid: 7de9a5744a5b20544b16cd1a3498bc66, type: 3}
+  useBehaviour: {fileID: 0}

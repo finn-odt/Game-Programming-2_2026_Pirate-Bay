@@ -121,7 +121,7 @@ namespace Player
             InventoryItemDataSO itemData = itemScript.InventoryItemData;
             Transform position = parent.transform;
             
-            UseItem(useBehaviour, itemData, position);
+            UseItem(useBehaviour, e.leftHand, itemData, position);
         }
 
         private void OnCoinCollection(CollectedCoinEvent e)
@@ -171,7 +171,7 @@ namespace Player
             collectedCoins.SetValue(coins);
         }
         
-        public void UseItem(ItemUseBehaviourSO useBehaviour, InventoryItemDataSO itemData, Transform useOrigin)
+        public void UseItem(ItemUseBehaviourSO useBehaviour, bool leftHand, InventoryItemDataSO itemData, Transform useOrigin)
         {
             if (itemData == null || !itemData.HasUseBehaviour)
             {
@@ -181,6 +181,7 @@ namespace Player
 
             ItemUseContext context = new ItemUseContext(
                 user: this,  // give this IHuman as reference
+                bodyside: (leftHand ? ItemUseContext.BodySide.Left : ItemUseContext.BodySide.Right),
                 itemData: itemData,
                 aimDirection: transform.forward + new Vector3(0, 0.5f, 0),
                 useOrigin: useOrigin

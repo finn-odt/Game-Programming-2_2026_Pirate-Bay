@@ -106,6 +106,8 @@ namespace StarterAssets
         private bool berserkModeActive = false;
         private float berserkFactor;
 
+        private bool attackMode;
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
@@ -128,6 +130,7 @@ namespace StarterAssets
         private int _animIDJump;
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
+        private int _animIDAttack;
 
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
@@ -162,6 +165,8 @@ namespace StarterAssets
             GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
             
             GameEventManager.AddListener<PlayerBerserkEvent>(OnBerserkMode);
+            
+            GameEventManager.AddListener<PlayerSwordAttackEvent>(OnSwordAttack);
 
             if (dFlyMode)
             {
@@ -179,12 +184,25 @@ namespace StarterAssets
             
             GameEventManager.RemoveListener<PlayerBerserkEvent>(OnBerserkMode);
             
+            GameEventManager.RemoveListener<PlayerSwordAttackEvent>(OnSwordAttack);
+            
             if (dFlyMode)
             {
                 dToggleFlyingMode.performed -= OnToggleFlying;
                 dToggleFlyingMode.canceled -= OnToggleFlying;
                 dToggleFlyingMode.Disable();
             }
+        }
+
+        /// <summary>
+        /// This method is called by SwordUseBehaviour
+        /// which also handles cooldown time.
+        /// </summary>
+        /// <param name="e"></param>
+        private void OnSwordAttack(PlayerSwordAttackEvent e)
+        {
+            Debug.Log("Attack Mode activated");
+            attackMode = true;
         }
 
         private void OnBerserkMode(PlayerBerserkEvent e)
@@ -331,6 +349,7 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+            _animIDAttack = Animator.StringToHash("Attack");
         }
 
         private void HandleFlying()
@@ -484,6 +503,15 @@ namespace StarterAssets
             {
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+            
+                Debug.Log("Animator is updated");
+                // attack - animator override
+                if (attackMode)
+                {
+                    Debug.Log("Attack Animator is updated");
+                    _animator.SetTrigger(_animIDAttack);
+                    attackMode = false;
+                }
             }
         }
 
@@ -499,7 +527,7 @@ namespace StarterAssets
 
         private void UseHands()
         {
-            if (_input.useLeftHand) 
+            if (_input.useLeftHand)
             {
                 Debug.Log("LEFT HAND IS USED");
                 GameEventManager.Raise(new PlayerUseHandRequestEvent(true));
@@ -507,6 +535,7 @@ namespace StarterAssets
             }
             if(_input.useRightHand)
             {
+                attackMode = true;  // TODO: REMOVE !!!
                 Debug.Log("RIGHT HAND IS USED");
                 GameEventManager.Raise(new PlayerUseHandRequestEvent(false));
                 _input.useRightHand = false;

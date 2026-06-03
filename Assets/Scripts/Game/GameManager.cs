@@ -80,8 +80,8 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
         GameEventManager.RemoveListener<ReachedGoalEvent>(OnReachingGoal);
         GameEventManager.RemoveListener<InventoryVisibilityChangeEvent>(OnInventoryToggle);
         
-        // no saving of data, if application is already closed OR GameState = GameOver
-        if (!Application.isPlaying || fsm.CurrentState.GetType() != typeof(GameStateLost))
+        // no saving of data, if GameState = GameOver
+        if (fsm.CurrentState.GetType() == typeof(GameStateLost))
             return;
         
         // Save Configuration

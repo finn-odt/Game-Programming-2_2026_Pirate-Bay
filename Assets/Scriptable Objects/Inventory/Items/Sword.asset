@@ -16,9 +16,11 @@ MonoBehaviour:
   mesh: {fileID: 4300000, guid: 72be0c703037640cf97b8487e7a0d830, type: 3}
   material: {fileID: 2100000, guid: 1c8657c6b5cdc4eb5bcac1968488b356, type: 2}
   meshScale: 0.21
+  meshEulerRotation: {x: 0, y: 180, z: 0}
   itemName: Sword
   description: Sword that can be used for combat
   shopCost: 70
   weight: 4
   efficiency: 4
   icon: {fileID: 2800000, guid: 6cef08af560429747895eaefff8423ca, type: 3}
+  useBehaviour: {fileID: 11400000, guid: 2f3c6475f9a95944fafcc6b3fe28faea, type: 2}

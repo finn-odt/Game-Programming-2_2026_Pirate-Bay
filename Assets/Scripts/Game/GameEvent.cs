@@ -358,6 +358,18 @@ namespace GameEvents
         }
     }
     
+    public class PlayerSwordAttackEvent : GameEvent
+    {
+        public PlayerSwordAttackEvent()
+        {
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
     public class PlayerEquipItemEvent : GameEvent
     {
         public readonly GameObject item;
