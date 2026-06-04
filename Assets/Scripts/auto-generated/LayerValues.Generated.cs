@@ -76,6 +76,11 @@ namespace UnityConstantsGenerator
         /// </summary>
         Items = 13,
 
+        /// <summary>
+        /// Clouds
+        /// </summary>
+        Clouds = 14,
+
     }
 
     [System.Flags]
@@ -150,6 +155,11 @@ namespace UnityConstantsGenerator
         /// Items
         /// </summary>
         Items = 1 << 13,
+
+        /// <summary>
+        /// Clouds
+        /// </summary>
+        Clouds = 1 << 14,
 
     }
 
