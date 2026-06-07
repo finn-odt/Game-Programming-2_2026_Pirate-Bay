@@ -1,3 +1,9 @@
+# Cloning of the Project
+
+To avoid problems with assets handled by GIT LFS, use the following commands in the terminal to clone the project:
+1. ```git lfs install```
+2. ```git clone https://github.com/finn-odt/Game-Programming-2_2026_Pirate-Bay.git```
+
 # Pirate Bay
 
 You're a pirate on the main island of a pirate hideout and you're mate has been captured by renegade skeletons. Now it is your duty to help him.
