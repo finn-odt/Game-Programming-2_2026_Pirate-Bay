@@ -12,6 +12,8 @@ public abstract class IInteractable : MonoBehaviour
     protected bool playerInTrigger = false;
     protected bool isGamePaused = false;
     
+    [SerializeField] protected GameEventTypeReference eventOnTriggerEnter;
+    
     protected void OnEnable()
     {
         GameEventManager.AddListener<PlayerInteractionRequestEvent>(OnInteraction);  // called by ThirdPersonController
@@ -61,6 +63,8 @@ public abstract class IInteractable : MonoBehaviour
         if(other.gameObject.layer == (int)LayerId.Player) {
             playerInTrigger = true;
             GameEventManager.Raise(new InteractionPossibleEvent(true, gameObject));
+            if (eventOnTriggerEnter != null && eventOnTriggerEnter.Type != null)
+                eventOnTriggerEnter.Raise();  // raise this Game Event Reference
         }
     }
 

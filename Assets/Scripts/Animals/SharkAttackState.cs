@@ -35,7 +35,7 @@ public class SharkAttackState : IFSMState<SharkBehaviour>
         
         Vector3 npcForward = e.transform.forward;
         Vector3 playerPos = e.player.Position + new Vector3(0, 1f, 0);  // account hight of model
-        Vector3 npcPos = e.transform.position + new Vector3(0, e.heightOfEyes, 0);
+        Vector3 npcPos = e.transform.position + e.meshOffset + new Vector3(0, e.heightOfEyes, 0);
 
         // Raycast from NPC to Player
         Vector3 dir = playerPos - npcPos;

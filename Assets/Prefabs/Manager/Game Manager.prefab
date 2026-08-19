@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8387069012530974212}
   - component: {fileID: 2456193501035547454}
+  - component: {fileID: 992880474978573615}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -50,3 +51,16 @@ MonoBehaviour:
   isInventoryOpen: 0
   gameOver: 0
   reachedGoal: 0
+--- !u!114 &992880474978573615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7186042366939008328}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9c9b0b28a60e5c4b9970d033ef223c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeviceInitialization
+  actionMap: {fileID: -944628639613478452, guid: 72cb6779e2fe36046a0c868574015182, type: 3}

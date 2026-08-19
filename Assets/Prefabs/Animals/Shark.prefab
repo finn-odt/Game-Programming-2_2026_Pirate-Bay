@@ -625,16 +625,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4e3f022ea9a456fa2700866d1c908a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SharkBehaviour
-  player: {fileID: 0}
+  health: 25
   visionAngleXPatrol: 140
   visionAngleYPatrol: 12
   visionAngleXChase: 160
   visionAngleYChase: 18
   maxVisionDistance: 50
   maxTargetRadius: 200
+  meshOffset: {x: 0, y: 0, z: 0}
   heightOfEyes: 0
+  damagePerInterval: 1
+  damageTimeInterval: 0.1
   patrolOrChase: 0
   drawOnlyOnSelect: 1
+  agent: {fileID: 0}
+  currentVisionAngleX: 140
+  currentVisionAngleY: 12
+  isGamePaused: 0
 --- !u!195 &1000425769857453964
 NavMeshAgent:
   m_ObjectHideFlags: 0

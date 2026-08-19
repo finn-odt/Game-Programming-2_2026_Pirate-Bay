@@ -3,11 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using GameEvents;
+using Opsive.UltimateCharacterController.Character;
+using Opsive.UltimateCharacterController.Character.Abilities;
+using Opsive.UltimateCharacterController.Game;
+using SLTypes;
 using TriInspector;
 using UnityConstantsGenerator;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityServiceLocator;
 
+[RequireComponent(typeof(KinematicObject))]
 public class MovingShipBehaviour : MonoBehaviour
 {
     /*
@@ -19,25 +25,42 @@ public class MovingShipBehaviour : MonoBehaviour
     private int targetIndex = 0;
     */
 
+    private readonly HashSet<Collider> playerCollidersOnBoard = new();
+    private UltimateCharacterLocomotion playerLocomotion;
     
     private bool playerOnBoard = false;
     [HideInInspector] public bool sailingActive = false, reachedDestination = false;
 
-    private NavMeshAgent agent;
+    [SerializeField] private BoatNavMeshAgentHandler navAgentHandler;
+    [SerializeField] private float rotationSpeed = 180f;
+    
     private List<Transform> waypoints = new();
     [SerializeField, LabelText("Tag of waypoints for this Boat (Parent Object)")] private string waypointTag;
     private int currentWaypoint = 0;
     private bool waypointIdxRaising = true;
+    private bool destinationSet;
     
     protected bool isGamePaused = false;
+    
+    private Transform currentMovingPlatform;
+
+    private KinematicObject _kinematicObject;
+
+    private void Awake()
+    {
+        _kinematicObject = GetComponent<KinematicObject>();
+        
+        if (navAgentHandler == null) {
+            Debug.LogError($"No BoatNavMeshAgentHandler assigned for '{gameObject.name}'.");
+            enabled = false;
+            return;
+        }
+
+        navAgentHandler.Warp(transform.position);
+    }
 
     void Start()
     {
-        //currentYaw = transform.rotation.eulerAngles.y;
-
-        // get navmesh agent
-        agent = GetComponentInChildren<NavMeshAgent>();
-
         // get all waypoints by tag
         GameObject[] waypointParent = GameObject.FindGameObjectsWithTag(waypointTag);
         waypoints = new List<Transform>();
@@ -60,6 +83,12 @@ public class MovingShipBehaviour : MonoBehaviour
     private void OnDisable()
     {
         GameEventManager.RemoveListener<GameStateChangedEvent>(OnGameStateChange);
+        ClearMovingPlatform();
+    }
+
+    private void OnDestroy()
+    {
+        ClearMovingPlatform();
     }
 
     private void OnGameStateChange(GameStateChangedEvent e)
@@ -67,141 +96,186 @@ public class MovingShipBehaviour : MonoBehaviour
         isGamePaused = e.newState == GameStateChangedEvent.GameState.Paused;  // set new value
     }
 
-    // Update is called once per frame
-    void Update()
+    private void FixedUpdate()
     {
         if (isGamePaused)
             return;
-        
-        if (!AgentReady())
+
+        if (!sailingActive || reachedDestination)
         {
-            Debug.Log($"NavMeshAgent not ready of moving ship '{gameObject.name}'");
+            destinationSet = false;
             return;
         }
 
-        // drive to end when player is not on board anymore, his loss
-        if (!sailingActive || reachedDestination || waypoints == null || waypoints.Count == 0)
+        if (navAgentHandler == null || !navAgentHandler.IsReady)
+            return;
+
+        if (waypoints == null || waypoints.Count == 0)
+            return;
+
+        if (!destinationSet)
         {
-            if (agent.hasPath || agent.pathPending)
+            destinationSet = navAgentHandler.SetDestination(waypoints[currentWaypoint].position);
+
+            if (!destinationSet)
             {
-                agent.ResetPath();
+                Debug.LogWarning("Initial boat destination couldn't be registered on NavMeshAgent.");
+                return;
             }
-            return;
+
+            Debug.Log($"Initial boat destination set: {waypoints[currentWaypoint].name}");
+        }
+        
+        /*
+        Debug.Log(
+            $"NAV DEBUG | " +
+            $"agentPos={navAgentHandler.transform.position}, " +
+            $"boatPos={transform.position}, " +
+            $"isReady={navAgentHandler.IsReady}, " +
+            $"hasPath={navAgentHandler.Agent.hasPath}, " +
+            $"pathPending={navAgentHandler.Agent.pathPending}, " +
+            $"pathStatus={navAgentHandler.Agent.pathStatus}, " +
+            $"isStopped={navAgentHandler.Agent.isStopped}, " +
+            $"speed={navAgentHandler.Agent.speed}, " +
+            $"acceleration={navAgentHandler.Agent.acceleration}, " +
+            $"velocity={navAgentHandler.Agent.velocity}, " +
+            $"desiredVelocity={navAgentHandler.Agent.desiredVelocity}, " +
+            $"remainingDistance={navAgentHandler.Agent.remainingDistance}, " +
+            $"stoppingDistance={navAgentHandler.Agent.stoppingDistance}, " +
+            $"updatePosition={navAgentHandler.Agent.updatePosition}, " +
+            $"updateRotation={navAgentHandler.Agent.updateRotation}"
+        );
+        */
+
+        Vector3 delta = navAgentHandler.ConsumeDelta();
+        delta.y = 0f;  // no vertical movement
+
+        transform.position += delta;
+
+        Vector3 desiredVelocity = navAgentHandler.DesiredVelocity;
+        desiredVelocity.y = 0f;
+
+        if (desiredVelocity.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(desiredVelocity.normalized, Vector3.up);
+
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+            );
         }
 
-        if (HasReachedDestination())
+        if (navAgentHandler.HasReachedDestination())
         {
             NextTarget();
         }
     }
-    
-    private bool AgentReady()
-    {
-        return agent != null &&  agent.isActiveAndEnabled && agent.isOnNavMesh;
-    }
-    
-    private bool HasReachedDestination()
-    {
-        if (agent.pathPending)
-            return false;
-
-        if (agent.remainingDistance > agent.stoppingDistance)
-            return false;
-
-        if (agent.hasPath && agent.velocity.sqrMagnitude > 0.01f)
-            return false;
-
-        return true;
-    }
 
     private void NextTarget()
     {
-        if (isGamePaused || !sailingActive || reachedDestination)
+        if (isGamePaused || !sailingActive || reachedDestination || waypoints == null || waypoints.Count == 0)
             return;
 
-        if (waypointIdxRaising && currentWaypoint == waypoints.Count - 1  // reached end of waypoints
-            || !waypointIdxRaising && currentWaypoint == 0)  // reached end of waypoints (while going backwards)
+        if ((waypointIdxRaising && currentWaypoint == waypoints.Count - 1) ||
+            (!waypointIdxRaising && currentWaypoint == 0))
         {
             waypointIdxRaising = !waypointIdxRaising;
             reachedDestination = true;
+            destinationSet = false;
             return;
         }
+
         currentWaypoint += waypointIdxRaising ? 1 : -1;
 
-        // set new destination
-        agent.SetDestination(waypoints[currentWaypoint].position);
+        destinationSet = navAgentHandler.SetDestination(waypoints[currentWaypoint].position);
+
+        if (!destinationSet)
+        {
+            Debug.LogWarning("Destination couldn't be registered on NavMeshAgent in MovingShipBehaviour");
+        }
+    }
+    
+    public string GetHierarchyPath(GameObject obj)
+    {
+        if (obj == null)
+            return string.Empty;
+
+        Transform current = obj.transform;
+        string path = current.name;
+
+        while (current.parent != null)
+        {
+            current = current.parent;
+            path = current.name + "/" + path;
+        }
+
+        return path;
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.layer != (int)LayerId.Player)
+        if (other.gameObject.layer != (int)LayerId.Player)
             return;
 
+        var locomotion = other.GetComponentInParent<UltimateCharacterLocomotion>();
+        if (locomotion == null)
+            return;
+
+        playerCollidersOnBoard.Add(other);
+        playerLocomotion = locomotion;
+        playerOnBoard = true;
+
+        if (!playerLocomotion.SetMovingPlatform(transform))
+            Debug.LogWarning($"Moving Platform could not be set: {GetHierarchyPath(gameObject)}");
+
         Debug.Log("Player now on Board!");
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.layer != (int)LayerId.Player)
+            return;
+
+        var locomotion = other.GetComponentInParent<UltimateCharacterLocomotion>();
+        if (locomotion == null)
+            return;
+
+        playerCollidersOnBoard.Add(other);
+        playerLocomotion = locomotion;
         playerOnBoard = true;
     }
 
-    void OnTriggerStay(Collider other)
+    private void OnTriggerExit(Collider other)
     {
-        if(other.gameObject.layer != (int)LayerId.Player)
+        if (other.gameObject.layer != (int)LayerId.Player)
             return;
-        
-        playerOnBoard = true;  
-    }
 
-    void OnTriggerExit(Collider other)
-    {
-        if(other.gameObject.layer != (int)LayerId.Player)
+        playerCollidersOnBoard.Remove(other);
+
+        if (playerCollidersOnBoard.Count > 0)
             return;
 
         playerOnBoard = false;
+
+        if (playerLocomotion != null) {
+            if (!playerLocomotion.SetMovingPlatform(null))
+                Debug.LogWarning($"Moving Platform could not be set to null: {GetHierarchyPath(gameObject)}");
+            
+            playerLocomotion = null;
+        }
+
+        Debug.Log("Player left Board!");
+    }
+    
+    private void ClearMovingPlatform()
+    {
+        if (playerLocomotion != null) {
+            playerLocomotion.SetMovingPlatform(null);
+            playerLocomotion = null;
+        }
+
+        playerCollidersOnBoard.Clear();
+        playerOnBoard = false;
     }
 }
-
-
-
-/*
-if(!playerOnBoard || targets.Length == 0 || isDeactivated)
-    return;
-
-Vector3 shipPos = transform.position;
-Vector3 targetPos = targets[targetIndex].position;
-targetPos.y = shipPos.y;  // no vertical movement
-
-// is current target reached?
-if(Vector3.Distance(targetPos, shipPos) < targetTriggerDistance) {
-    targetIndex = UpdateIndex(targetIndex, targetIdxRaising);
-    return;
-}
-
-Vector3 dir = targetPos - shipPos;  // Direction(A to B) = B - A
-dir.Normalize();
-
-// ROTATION
-float targetYaw = Quaternion.LookRotation(dir).eulerAngles.y;
-
-// Signed shortest difference, always between -180 and +180
-float delta = Mathf.DeltaAngle(currentYaw, targetYaw);
-
-// rotate boat, when target is not in look direction
-if(Math.Abs(delta) > 0.1f) {
-    currentYaw = Mathf.MoveTowardsAngle(
-        currentYaw,
-        targetYaw,
-        turnSpeed * Time.deltaTime
-    );
-    transform.rotation = Quaternion.Euler(0f, currentYaw, 0f);
-}
-
-float currSpeed = speed;
-// move slower, when rotation
-currSpeed *= (1 - (Math.Abs(delta) / 90f));
-currSpeed = currSpeed < 0 ? 0 : currSpeed;  // no negative movement
-
-// MOVEMENT — no overshooting
-transform.position = Vector3.MoveTowards(
-    transform.position,
-    targetPos,
-    currSpeed * Time.deltaTime
-);
-*/

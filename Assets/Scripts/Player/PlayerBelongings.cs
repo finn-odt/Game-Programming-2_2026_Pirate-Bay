@@ -2,8 +2,15 @@ using System;
 using System.Collections.Generic;
 using Configurations;
 using GameEvents;
+using Opsive.UltimateCharacterController.AddOns.Climbing;
+using Opsive.UltimateCharacterController.AddOns.Swimming;
+using Opsive.UltimateCharacterController.Character.Abilities;
+using Opsive.UltimateCharacterController.Traits;
+using Attribute = Opsive.UltimateCharacterController.Traits.Attribute;
+using EventHandler = Opsive.Shared.Events.EventHandler;
 using Player;
 using SLTypes;
+using UnityConstantsGenerator;
 using UnityEngine;
 using UnityServiceLocator;
 
@@ -13,13 +20,19 @@ namespace Player
     {
         [SerializeField] private IntegerSO collectedCoins;
         [SerializeField] private IntegerSO health;
+        private Health _opsiveHealth;
         [SerializeField] private float playerHeight;
         [SerializeField] private GameObject leftHandEquipParent, rightHandEquipParent;
+        [SerializeField] private Transform dropOrigin;
+        
+        [Header("Debug")]
+        [SerializeField] private bool useSavedPlayerHealth = false;
 
         public Transform Transform => transform;
         public Vector3 Position => transform.position;
         public int CollectedCoins => collectedCoins.RuntimeValue;
         public int Health => health.RuntimeValue;
+        public float HealthPercentage => health.RuntimeValue / (float)health.InitialValue;
         public float Height => playerHeight;
 
         public GameObject LeftHandEquip
@@ -33,13 +46,76 @@ namespace Player
             set => rightHandEquipParent = value;
         }
 
+        public Transform DropOrigin
+        {
+            get => dropOrigin;
+        }
+
         public List<GameObject> CurrentGrounds { get; set; } = new();
+        
+        [SerializeField] private AttributeManager attributeManager;
+        private Attribute healthAttribute;
 
         private void Awake()
         {
-            ServiceLocator.Global.Register<IPlayer>(this);
-        }
+            // register (this) player
+            ServiceLocator.ForSceneOf(this).Register<IPlayer>(this);
+            
+            // initialize attribute of character controller
+            if (attributeManager == null)
+                attributeManager = GetComponent<AttributeManager>();
         
+            healthAttribute = attributeManager.GetAttribute("Health");
+
+            if (healthAttribute == null)
+            {
+                Debug.LogError("Could not find Breath attribute on AttributeManager.");
+            }
+            
+            // restore health
+            if (useSavedPlayerHealth)
+            {
+                health.SetValue(GameConfiguration.Data.health);
+            }
+            else
+            {
+                // reset value every time to init-value
+                health.SetValue(health.InitialValue);
+                GameConfiguration.SaveHealthPoints(Health);
+            }
+            
+            _opsiveHealth = GetComponent<Health>();
+        }
+
+        private void OnDestroy()
+        {
+            // Added this method manually to the ServiceLocator, to unregister on Scene Reload
+            ServiceLocator.ForSceneOf(this).Unregister<IPlayer>(this);
+        }
+
+        private void Start()
+        {
+            Debug.Log($"Health Display: {health.RuntimeValue}");
+            UIManager.Instance.DisplayHealth(health.RuntimeValue);
+        }
+
+
+        public void OnCharacterAbilityActive(Ability ability, bool active)
+        {
+            if (ability.GetType() == typeof(Drown))
+            {
+                GameEventManager.Raise(new GameOverEvent(transform.position, GameOverEvent.Killer.Drowned));
+            } else if (ability.GetType() == typeof(Die))
+            {
+                GameEventManager.Raise(new GameOverEvent(transform.position, GameOverEvent.Killer.Npc));
+            }
+        }
+
+        private void Update()
+        {
+            //GameEventManager.Raise(new UpdateHealthUIEvent((int)GetHealth_UCC()));
+        }
+
         public void EquipItemToHand(PlayerEquipItemEvent e)
         {
             Transform parent = e.leftHand
@@ -48,8 +124,23 @@ namespace Player
 
             e.item.transform.SetParent(parent, false);
 
+            // set layer to 'Player' -> no camera occlusion
+            SetLayerRecursively(e.item.gameObject, (int)LayerId.Player);
+
             e.item.transform.localPosition = Vector3.zero;
             e.item.transform.localEulerAngles = Vector3.zero;  // !e.leftHand ? new Vector3(0, 0, 180f) :
+        }
+        
+        private static void SetLayerRecursively(GameObject parent, int layer, bool includeParent = true)
+        {
+            if (parent == null)
+                return;
+
+            parent.layer = layer;  
+            foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+            {
+                child.gameObject.layer = layer;
+            }
         }
         
         /// <summary>
@@ -64,6 +155,9 @@ namespace Player
             GameObject parent = e.leftHand ? leftHandEquipParent : rightHandEquipParent;
             foreach (Transform child in parent.transform)
             {
+                // restore correct layer
+                SetLayerRecursively(child.gameObject, (int)LayerId.Items);
+                
                 if (e.doNotDestroy)
                     child.parent = null;
                 else
@@ -153,12 +247,28 @@ namespace Player
 
         public void AddHealth(int amount)
         {
-            health.Add(amount);
+            // update ScriptableObject-Data & save new value
+            int newHealth = health.Add(amount);
+            
+            // set health in Ultimate Character Controller
+            _opsiveHealth.Heal(amount);
+            
+            // _opsiveHealth.ImmediateDeath();
+            
+            // set health in UI
+            UIManager.Instance.DisplayHealth(HealthPercentage);
         }
 
         public void TakeDamage(int amount)
         {
-            health.Subtract(amount);
+            // update ScriptableObject-Data & save new value
+            int newHealth = health.Subtract(amount);
+            
+            // set health in Ultimate Character Controller
+            _opsiveHealth.Damage(amount);
+            
+            // set health in UI
+            UIManager.Instance.DisplayHealth(HealthPercentage);
         }
         
         public void SetInitialPosition(Vector3 pos)

@@ -12,7 +12,6 @@ public class NPCChaseState : IFSMState<NPCFollowerBehaviour>
 {
 
     private float timeSinceLastEncounter = 0;
-
     
     public void Enter(NPCFollowerBehaviour e)
     {
@@ -31,7 +30,16 @@ public class NPCChaseState : IFSMState<NPCFollowerBehaviour>
     }
 
     public void Reason(NPCFollowerBehaviour e)
-    {        
+    {
+        if (e.isGamePaused)
+            return;
+        
+        if (e.Health <= 0)
+        {
+            e.ChangeState(new NPCDeathState());
+            return;
+        }
+
         Vector3 npcForward = e.transform.forward;
         Vector3 playerPos = e.player.Position + new Vector3(0, e.heightOfEyes, 0);  // account height of model
         Vector3 npcPos = e.transform.position + new Vector3(0, e.heightOfEyes, 0);

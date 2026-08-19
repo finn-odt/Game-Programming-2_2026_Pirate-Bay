@@ -16,6 +16,12 @@ MonoBehaviour:
   wasUsed: 0
   explosionEffectEnabled: 1
   smokeEffectEnabled: 0
-  throwForce: 15
   explosionEffectPrefab: {fileID: 1607639662943796, guid: 3e22210b0470bfa4aad5de0bedce25e8, type: 3}
   smokeEffectPrefab: {fileID: 0}
+  soundOnImpact: {fileID: 8300000, guid: 386f004295cceb9478b06d83a5a21931, type: 3}
+  throwForce: 15
+  damageInCenter: 50
+  explosionRadius: 5
+  lifeformLayers:
+    serializedVersion: 2
+    m_Bits: 3288400192

@@ -1,24 +1,59 @@
+using System;
 using System.Collections;
 using GameEvents;
+using Opsive.UltimateCharacterController.Traits;
+using Attribute = Opsive.UltimateCharacterController.Traits.Attribute;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
-    [SerializeField] private TextMeshProUGUI coins;
-    [SerializeField] private Slider healthSlider;
-    [SerializeField] private Image airVolumeFull, airVolumeEmpty; // has parent that can be (de)activated for showing
+    [Serializable]
+    public struct HealthSlider
+    {
+        public GameObject parent;
+        public Image slider;
+    }
 
-    [SerializeField] private GameObject interactionIndicator;
+    [Serializable]
+    public struct GameCanvas
+    {
+        public Canvas canvas;
+        public TextMeshProUGUI coins;
+        public HealthSlider healthSlider;
+        public Image airVolumeFull;  // has parent that can be (de)activated for showing
+        public Image airVolumeEmpty;  // has parent that can be (de)activated for showing
+        public GameObject interactionIndicator;
+    }
 
-    [SerializeField] private Canvas gameCanvas, pauseCanvas;
+    [Serializable]
+    public struct MenuCanvas
+    {
+        public Canvas canvas;
+        public TMP_Dropdown difficultyDropdown;
+        public Slider mouseXSensitivitySlider;
+        public Slider mouseYSensitivitySlider;
+        public Slider gamepadXSensitivitySlider;
+        public Slider gamepadYSensitivitySlider;
+    }
 
-    [SerializeField] private TMP_Dropdown difficultyDropdown;
-    [SerializeField] private Slider mouseXSensitivitySlider, mouseYSensitivitySlider,
-        gamepadXSensitivitySlider, gamepadYSensitivitySlider;
+    [Serializable]
+    public struct GameOverCanvas
+    {
+        public Canvas canvas;
+        public TextMeshProUGUI killedByFillIn;
+    }
+
+    public GameCanvas gameCanvas;
+    public MenuCanvas menuCanvas;
+    public GameOverCanvas gameOverCanvas;
+
+    private float healthTargetFillAmount = 1f, healthFillUpdateStep = 0.8f;
+    private float healthFillAmount => gameCanvas.healthSlider.slider.fillAmount;
     
     [Header("Scriptable Objects")]
     // Scriptable Object for Player
@@ -36,84 +71,153 @@ public class UIManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this) {
+            Instance = null;
+        }
+    }
+
     void Start()
     {
-        coins.text = "0";
-        mouseXSensitivitySlider.value = 1.8f;
-        mouseYSensitivitySlider.value = 0.85f;
-        gamepadXSensitivitySlider.value = 0.5f;
-        gamepadYSensitivitySlider.value = 0.3f;
-        interactionIndicator.SetActive(false);
+        gameCanvas.coins.text = "0";
+        menuCanvas.mouseXSensitivitySlider.value = 1.8f;
+        menuCanvas.mouseYSensitivitySlider.value = 0.85f;
+        menuCanvas.gamepadXSensitivitySlider.value = 0.5f;
+        menuCanvas.gamepadYSensitivitySlider.value = 0.3f;
+        gameCanvas.interactionIndicator.SetActive(false);
         
         //Add listener for when the value of the Dropdown changes
-        difficultyDropdown.onValueChanged.AddListener(delegate {
-            OnDifficultyDropdownChange(difficultyDropdown);
+        menuCanvas.difficultyDropdown.onValueChanged.AddListener(delegate {
+            OnDifficultyDropdownChange(menuCanvas.difficultyDropdown);
         });
         //Add listener for mouse sensitivity slider changes
-        mouseXSensitivitySlider.onValueChanged.AddListener(delegate {
-            OnSensitivityChange(mouseXSensitivitySlider, mouseYSensitivitySlider, false);
+        menuCanvas.mouseXSensitivitySlider.onValueChanged.AddListener(delegate {
+            OnSensitivityChange(menuCanvas.mouseXSensitivitySlider, menuCanvas.mouseYSensitivitySlider, false);
         });
-        mouseYSensitivitySlider.onValueChanged.AddListener(delegate {
-            OnSensitivityChange(mouseXSensitivitySlider, mouseYSensitivitySlider, false);
+        menuCanvas.mouseYSensitivitySlider.onValueChanged.AddListener(delegate {
+            OnSensitivityChange(menuCanvas.mouseXSensitivitySlider, menuCanvas.mouseYSensitivitySlider, false);
         });
         //Add listener for gamepad sensitivity slider changes
-        gamepadXSensitivitySlider.onValueChanged.AddListener(_ =>
+        menuCanvas.gamepadXSensitivitySlider.onValueChanged.AddListener(_ =>
         {
-            OnSensitivityChange(gamepadXSensitivitySlider, gamepadYSensitivitySlider, true);
+            OnSensitivityChange(menuCanvas.gamepadXSensitivitySlider, menuCanvas.gamepadYSensitivitySlider, true);
         });
-        gamepadYSensitivitySlider.onValueChanged.AddListener(_ =>
+        menuCanvas.gamepadYSensitivitySlider.onValueChanged.AddListener(_ =>
         {
-            OnSensitivityChange(gamepadXSensitivitySlider, gamepadYSensitivitySlider, true);
+            OnSensitivityChange(menuCanvas.gamepadXSensitivitySlider, menuCanvas.gamepadYSensitivitySlider, true);
         });
     }
 
     void Update()
     {
         DisplayCoinAmount();
-        DisplayHealth();
+        UpdateHealthFill();
     }
     
     void OnEnable()
     {
         GameEventManager.AddListener<InteractionPossibleEvent>(OnInteractionEnter);
         GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
+        GameEventManager.AddListener<GameOverEvent>(OnGameOver);
     }
 
     void OnDisable()
     {
         GameEventManager.RemoveListener<InteractionPossibleEvent>(OnInteractionEnter);
         GameEventManager.RemoveListener<GameStateChangedEvent>(OnGameStateChange);
+        GameEventManager.RemoveListener<GameOverEvent>(OnGameOver);
+    }
+
+    private void OnGameOver(GameOverEvent e)
+    {
+        string killer = "";
+        switch (e.killer)
+        {
+            case GameOverEvent.Killer.Drowned:
+                killer = "Drowning";
+                break;
+            case GameOverEvent.Killer.Npc:
+                killer = "an Enemy";
+                break;
+            case GameOverEvent.Killer.Shark:
+                killer = "a Shark";
+                break;
+            case GameOverEvent.Killer.Zombie:
+                killer = "a Zombie";
+                break;
+        }
+        gameOverCanvas.killedByFillIn.text = killer;
     }
 
     private void OnGameStateChange(GameStateChangedEvent e)
     {
         if (e.newState == GameStateChangedEvent.GameState.Play)
         {
-            gameCanvas.gameObject.SetActive(true);
-            pauseCanvas.gameObject.SetActive(false);
-        } else if (e.newState == GameStateChangedEvent.GameState.Paused)
+            gameOverCanvas.canvas.gameObject.SetActive(false);
+            gameCanvas.canvas.gameObject.SetActive(true);
+            menuCanvas.canvas.gameObject.SetActive(false);
+        }
+        else if (e.newState == GameStateChangedEvent.GameState.Paused)
         {
-            gameCanvas.gameObject.SetActive(false);
-            pauseCanvas.gameObject.SetActive(true);
+            gameOverCanvas.canvas.gameObject.SetActive(false);
+            gameCanvas.canvas.gameObject.SetActive(false);
             // close conversation if necessary
             GameEventManager.Raise(new ConversationUIEvent("", false));
-        } else if (e.newState == GameStateChangedEvent.GameState.Inventory)
+            
+            menuCanvas.canvas.gameObject.SetActive(true);
+        }
+        else if (e.newState == GameStateChangedEvent.GameState.Inventory)
         {
-            gameCanvas.gameObject.SetActive(true);
+            gameOverCanvas.canvas.gameObject.SetActive(false);
+            menuCanvas.canvas.gameObject.SetActive(false);
             // close conversation if necessary
             GameEventManager.Raise(new ConversationUIEvent("", false));
-            pauseCanvas.gameObject.SetActive(false);
+            
+            gameCanvas.canvas.gameObject.SetActive(true);
+        }
+        else if(e.newState == GameStateChangedEvent.GameState.Lost)
+        {
+            gameCanvas.canvas.gameObject.SetActive(false);
+            menuCanvas.canvas.gameObject.SetActive(false);
+            // close conversation if necessary
+            GameEventManager.Raise(new ConversationUIEvent("", false));
+            
+            gameOverCanvas.canvas.gameObject.SetActive(true);
         }
     }
     
     private void DisplayCoinAmount()
     {
-        coins.text = collectedCoins.RuntimeValue.ToString();
+        gameCanvas.coins.text = collectedCoins.RuntimeValue.ToString();
+    }
+
+    private void UpdateHealthFill()
+    {
+        if (healthTargetFillAmount != healthFillAmount)
+        {
+            int dif = Math.Sign(healthTargetFillAmount - healthFillAmount);
+            
+            float potentialResult = healthFillAmount + dif * healthFillUpdateStep * Time.deltaTime;
+            int dif2 = Math.Sign(healthTargetFillAmount - potentialResult);
+            
+            // if the sign swapped (we would overshoot the target) -> stop action
+            if (dif != dif2)
+                gameCanvas.healthSlider.slider.fillAmount = healthTargetFillAmount;
+            else
+                gameCanvas.healthSlider.slider.fillAmount = potentialResult;
+        }
     }
     
-    private void DisplayHealth()
+    public void DisplayHealth(float healthPercentage)
     {
-        healthSlider.value = healthPoints.RuntimeValue / 100f;  // percentage
+        if(healthPercentage > 1f)
+            healthPercentage /= 100f;
+
+        if (healthPercentage > 1f)
+            return;
+        
+        healthTargetFillAmount = healthPercentage;
     }
 
     private float timeSinceAirEmpty = 0;
@@ -125,50 +229,48 @@ public class UIManager : MonoBehaviour
         {
             timeSinceAirEmpty = 0;
             // do not draw, as air is full [no UI clutter]
-            airVolumeFull.transform.parent.gameObject.SetActive(false);
+            gameCanvas.airVolumeFull.transform.parent.gameObject.SetActive(false);
         }
         else if (percentage <= 0)  // EMPTY: blink red-white
         {
-            Debug.Log(timeSinceAirEmpty);
             timeSinceAirEmpty += Time.deltaTime;
             _lastAirVolumeBlink += Time.deltaTime;
-            airVolumeFull.transform.parent.gameObject.SetActive(true);
-            airVolumeFull.fillAmount = 0;
-            airVolumeEmpty.fillAmount = 1;
+            gameCanvas.airVolumeFull.transform.parent.gameObject.SetActive(true);
+            gameCanvas.airVolumeFull.fillAmount = 0;
+            gameCanvas.airVolumeEmpty.fillAmount = 1;
 
             // let it blink
             int millisecs = (int)(_lastAirVolumeBlink * 1000);
-            Debug.Log(millisecs);
             if (millisecs >= 300)
             {
-                if(airVolumeEmpty.color == Color.white)
-                    airVolumeEmpty.color = Color.red;
+                if(gameCanvas.airVolumeEmpty.color == Color.white)
+                    gameCanvas.airVolumeEmpty.color = Color.red;
                 else
-                    airVolumeEmpty.color = Color.white;
+                    gameCanvas.airVolumeEmpty.color = Color.white;
                 _lastAirVolumeBlink = 0;
             }
         }
         else  // Show Progress
         {
             timeSinceAirEmpty = 0;
-            airVolumeEmpty.color = Color.white;
+            gameCanvas.airVolumeEmpty.color = Color.white;
             // draw bubbles with percentage
-            airVolumeFull.transform.parent.gameObject.SetActive(true);
-            airVolumeFull.fillAmount = percentage;
-            airVolumeEmpty.fillAmount = 1 - percentage;
+            gameCanvas.airVolumeFull.transform.parent.gameObject.SetActive(true);
+            gameCanvas.airVolumeFull.fillAmount = percentage;
+            gameCanvas.airVolumeEmpty.fillAmount = 1 - percentage;
         }
     }
     
     private Vector2 GetScreenCoordinatesOfPlayer(Vector3 position, Vector3 offset)
     {
         Vector3 worldPos = position + new Vector3(0, 0.5f, 0);
-        Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
+        Vector3 screenPos = OcclusionCameraController.Instance.GameplayCamera.WorldToScreenPoint(worldPos);
 
-        RectTransform canvasRect = gameCanvas.GetComponent<RectTransform>();
+        RectTransform canvasRect = gameCanvas.canvas.GetComponent<RectTransform>();
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvasRect,
             screenPos,
-            gameCanvas.worldCamera,
+            gameCanvas.canvas.worldCamera,
             out Vector2 localPos
         );
 
@@ -177,16 +279,17 @@ public class UIManager : MonoBehaviour
 
     private void OnInteractionEnter(InteractionPossibleEvent e)
     {
+        Debug.Log($"Interaction Indicator Changed: {e.interactionPossible}");
         if(e.interactionPossible)
         {
             // place indicator over interactable object
-            interactionIndicator.transform.localPosition = GetScreenCoordinatesOfPlayer(e.interactable.transform.position, new Vector3(0, 0, 0));
+            gameCanvas.interactionIndicator.transform.localPosition = GetScreenCoordinatesOfPlayer(e.interactable.transform.position, new Vector3(0, 0, 0));
             // activate indicator
-            interactionIndicator.SetActive(true);
+            gameCanvas.interactionIndicator.SetActive(true);
         } else
         {
             // deactivate indicator
-            interactionIndicator.SetActive(false);
+            gameCanvas.interactionIndicator.SetActive(false);
         }
     }
     

@@ -46,6 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7d03acfc5cd60548849a7e2ba415140, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LootChest
+  eventOnTriggerEnter:
+    assemblyQualifiedTypeName: GameEvents.UIInteractIndicatorEvent, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  nameOfMeshFolder: Meshes
   lidSpeed: 200
   coinAmount: 15
   coinSound: {fileID: 8300000, guid: c23f1170f3ea114418c0bd379ed1cfa3, type: 3}

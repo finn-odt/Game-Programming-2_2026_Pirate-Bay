@@ -5099,6 +5099,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f78d6b7ed4e55147b8c1dcace1d14bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CanonBehaviour
+  eventOnTriggerEnter:
+    assemblyQualifiedTypeName: GameEvents.UIInteractIndicatorEvent, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   smokeEffect: {fileID: 6272988860728668704}
   destroyedEffect: {fileID: 2730235486679319615}
   explosionEffect: {fileID: 3387271805435125043}

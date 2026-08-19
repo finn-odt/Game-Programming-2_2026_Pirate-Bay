@@ -26,7 +26,7 @@ public class CollectableItem : IInteractable
 
     private ColliderCallbackDelegate _delegate;
     
-    public ItemUseBehaviourSO runtimeUseBehaviour;
+    [HideInInspector] public ItemUseBehaviourSO runtimeUseBehaviour;
 
     public void AddCollisionListener(ColliderCallbackDelegate callback)
     {
@@ -148,6 +148,8 @@ public class CollectableItem : IInteractable
             Destroy(gameObject);
         }
     }
+    
+    
     
     /*private void OnCollisionEnter(Collision collision)
     {

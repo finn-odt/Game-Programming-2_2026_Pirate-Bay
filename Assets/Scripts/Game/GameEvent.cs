@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace GameEvents
 {
+    [Serializable]
     public abstract class GameEvent
     {
         public virtual bool isValid() { return true; }
@@ -313,7 +314,8 @@ namespace GameEvents
         {
             NPC,
             Shark,
-            Water
+            Water,
+            Explosion
         }
         
         public readonly DamagedBy damagedBy;
@@ -433,6 +435,249 @@ namespace GameEvents
             return itemData != null;
         }
     }
+    
+    public class PlayerSwimEvent : GameEvent
+    {
+        public readonly bool isInWater;
+        
+        public PlayerSwimEvent(bool isInWater)
+        {
+            this.isInWater = isInWater;
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class BroadcastMeanWaterSurfaceEvent : GameEvent
+    {
+        public readonly float waterSurfaceY;
+        
+        public BroadcastMeanWaterSurfaceEvent(float waterSurfaceY)
+        {
+            this.waterSurfaceY = waterSurfaceY;
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UpdateHealthUIEvent : GameEvent
+    {
+        public readonly int health;
+        
+        public UpdateHealthUIEvent(int health)
+        {
+            this.health = health;
+        }
+        
+        public override bool isValid ()
+        {
+            return health >= 0 && health <= 1f;
+        }
+    }
+    
+    public class CameraUnderWaterEvent : GameEvent
+    {
+        public readonly bool isUnderWater;
+        
+        public CameraUnderWaterEvent(bool isUnderWater)
+        {
+            this.isUnderWater = isUnderWater;
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class ToggleInventoryEvent : GameEvent
+    {
+        public ToggleInventoryEvent() {}
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class BroadcastInputControlSchemeEvent : GameEvent
+    {
+        public readonly string controlScheme;
+
+        public BroadcastInputControlSchemeEvent(string controlScheme)
+        {
+            this.controlScheme = controlScheme;
+        }
+        
+        public override bool isValid ()
+        {
+            return controlScheme != null && controlScheme.Length > 0;
+        }
+    }
+    
+    public class ConnectionModeChangedEvent : GameEvent
+    {
+        public readonly DeviceConnectionMode newMode;
+
+        public ConnectionModeChangedEvent(DeviceConnectionMode newMode)
+        {
+            this.newMode = newMode;
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UIPickupIndicatorEvent : GameEvent
+    {
+
+        public UIPickupIndicatorEvent()
+        {
+            Debug.Log("EVENT - UIPickupIndicatorEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UIInteractIndicatorEvent : GameEvent
+    {
+
+        public UIInteractIndicatorEvent()
+        {
+            Debug.Log("EVENT - UIInteractIndicatorEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UCCAbilityStatusEvent : GameEvent
+    {
+        public UCCAbilityStatusEvent()
+        {}
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    public class UCCAbilityPossibleEvent : GameEvent
+    {
+
+        public UCCAbilityPossibleEvent()
+        {}
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    public class UCCAbilityImpossibleEvent : GameEvent
+    {
+
+        public UCCAbilityImpossibleEvent()
+        {}
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UCCDivePossibleEvent : UCCAbilityPossibleEvent
+    {
+
+        public UCCDivePossibleEvent()
+        {
+            Debug.Log("EVENT - UCCDivePossibleEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    public class UCCDiveImpossibleEvent : UCCAbilityImpossibleEvent
+    {
+
+        public UCCDiveImpossibleEvent()
+        {
+            Debug.Log("EVENT - UCCDiveImpossibleEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UCCLadderClimbPossibleEvent : UCCAbilityPossibleEvent
+    {
+
+        public UCCLadderClimbPossibleEvent()
+        {
+            Debug.Log("EVENT - UCCLadderClimbPossibleEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    public class UCCLadderClimbImpossibleEvent : UCCAbilityImpossibleEvent
+    {
+
+        public UCCLadderClimbImpossibleEvent()
+        {
+            Debug.Log("EVENT - UCCLadderClimbImpossibleEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class UCCClimbFromWaterPossibleEvent : UCCAbilityPossibleEvent
+    {
+
+        public UCCClimbFromWaterPossibleEvent()
+        {
+            Debug.Log("EVENT - UCCClimbFromWaterPossibleEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    public class UCCClimbFromWaterImpossibleEvent : UCCAbilityImpossibleEvent
+    {
+
+        public UCCClimbFromWaterImpossibleEvent()
+        {
+            Debug.Log("EVENT - UCCClimbFromWaterImpossibleEvent");
+        }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
     
 
 }

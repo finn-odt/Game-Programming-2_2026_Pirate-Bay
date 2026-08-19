@@ -46,7 +46,7 @@ public class NPCSailorBehaviour : StatefulMonoBehaviour<NPCSailorBehaviour>
 
     void Start()
     {
-        ServiceLocator.Global.Get(out player);
+        ServiceLocator.ForSceneOf(this).Get(out player);
 
         if (meshes == null || meshes.Count == 0)
             return;

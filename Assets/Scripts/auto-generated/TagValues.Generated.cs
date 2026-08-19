@@ -111,6 +111,16 @@ namespace UnityConstantsGenerator
         /// </summary>
         public static readonly string GravesA = "GravesA";
 
+        /// <summary>
+        /// KeyboardUI
+        /// </summary>
+        public static readonly string KeyboardUI = "KeyboardUI";
+
+        /// <summary>
+        /// GamepadUI
+        /// </summary>
+        public static readonly string GamepadUI = "GamepadUI";
+
     }
 
 }

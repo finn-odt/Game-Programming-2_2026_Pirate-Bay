@@ -19,8 +19,74 @@ using Vector3 = UnityEngine.Vector3;
     using UnityEditor;
 #endif
 
-public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>
+public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>, IHuman
 {
+    
+    [Serializable]
+    public class DifficultySizes
+    {
+        [SerializeField] private IntegerSO easy;
+        [SerializeField] private IntegerSO normal;
+        [SerializeField] private IntegerSO hard;
+        
+        public bool IsValid => easy != null && normal != null && hard != null;
+        public bool HasAnyFieldSet => easy != null || normal != null || hard != null;
+
+        public IntegerSO this[GameDifficulty difficulty]
+        {
+            get
+            {
+                return difficulty switch
+                {
+                    GameDifficulty.Easy => easy,
+                    GameDifficulty.Normal => normal,
+                    GameDifficulty.Hard => hard,
+                    _ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, null)
+                };
+            }
+        }
+        
+        public IntegerSO TryGetNonNullValue()
+        {
+            if (easy != null)
+                return easy;
+            if (normal != null)
+                return normal;
+            if (hard != null)
+                return hard;
+            return null;
+        }
+    }
+
+    private IntegerSO runtimeHealth;
+
+    [SerializeField] private DifficultySizes health;  // is only used as "Prefab" (runtimeHealth-Instance is generated and used)
+    [SerializeField] private float playerHeight;
+    [SerializeField] private GameObject leftHandEquipParent, rightHandEquipParent;
+    private Transform dropOrigin;
+
+    public Transform Transform => transform;
+    public Vector3 Position => transform.position;
+    public int Health => runtimeHealth.RuntimeValue;
+    public float HealthPercentage => runtimeHealth.RuntimeValue / (float)runtimeHealth.InitialValue;
+    public float Height => playerHeight;
+
+    public GameObject LeftHandEquip
+    {
+        get => leftHandEquipParent;
+        set => leftHandEquipParent = value;
+    }
+    public GameObject RightHandEquip
+    {
+        get => rightHandEquipParent;
+        set => rightHandEquipParent = value;
+    }
+
+    public Transform DropOrigin
+    {
+        get => dropOrigin;
+    }
+
     [InfoBox("Configuration")]
     [SerializeField, LabelText("Tag of waypoints for this NPC")] private string waypointTag;
     [LabelText("Vision Angle X - Patrol (one-sided)"), Range(0f, 180f)] public float visionAngleXPatrol = 70f;
@@ -30,6 +96,10 @@ public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>
     public float maxVisionDistance;
 
     public float heightOfEyes = 1.65f;
+    
+    [SerializeField, Range(0, 100)] private int damagePerInterval;
+    [SerializeField, Unit("sec")] private float damageTimeInterval;
+    private float timeSinceLastDamage = 0f;
     
     [LabelText("Seconds NPC searches after loosing sight (Dif: EASY)")] public float maxTimeForSearch = 4f;
     private float initMaxTimeForSearch;
@@ -80,7 +150,55 @@ public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>
 
     void Start()
     {
-        ServiceLocator.Global.Get(out player);
+        ServiceLocator.ForSceneOf(this).Get(out player);
+        
+        // generate runtime instance for Health
+        if (health.HasAnyFieldSet & GameManager.Instance != null)
+            InitializeHealth(GameManager.Instance.gameDifficulty);  // clone health to runtimeHealth
+    }
+
+    private void InitializeHealth(GameDifficulty difficulty)
+    {
+        if (!health.HasAnyFieldSet)
+            return;
+        
+        if (runtimeHealth != null)
+        {
+            Destroy(runtimeHealth);
+        }
+
+        IntegerSO value = health[difficulty];
+        if (value == null)  // retrieve non-null value as default
+            value = health.TryGetNonNullValue();
+        
+        if(value != null)
+            runtimeHealth = Instantiate(value);  // clone health to runtimeHealth
+    }
+    
+    public void SetInitialPosition(Vector3 pos)
+    {
+        transform.position = pos;
+    }
+
+    public void UseItem(ItemUseBehaviourSO useBehaviour, bool leftHand, InventoryItemDataSO itemData, Transform useOrigin)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void TakeDamage(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        runtimeHealth.Subtract(amount);
+    }
+
+    public void AddHealth(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        runtimeHealth.Add(amount);
     }
     
     public bool AgentReady()
@@ -107,12 +225,15 @@ public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>
         {
             case GameDifficulty.Easy:
                 maxTimeForSearch = initMaxTimeForSearch;
+                InitializeHealth(GameDifficulty.Easy);  // clone health to runtimeHealth (refresh)
                 break;
             case GameDifficulty.Normal:
                 maxTimeForSearch = 1.5f * initMaxTimeForSearch;
+                InitializeHealth(GameDifficulty.Normal);  // clone health to runtimeHealth (refresh)
                 break;
             case GameDifficulty.Hard:
                 maxTimeForSearch = 2.2f * initMaxTimeForSearch;
+                InitializeHealth(GameDifficulty.Hard);  // clone health to runtimeHealth (refresh)
                 break;
         }
     }
@@ -124,8 +245,33 @@ public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.layer == (int)LayerId.Player)
-            GameEventManager.Raise(new GameOverEvent(player.Position, GameOverEvent.Killer.Npc));
+        if (other.gameObject == player.Transform.gameObject)
+        {
+            GameEventManager.Raise(new PlayerDamageEvent(damagePerInterval, PlayerDamageEvent.DamagedBy.NPC));
+            timeSinceLastDamage = 0f;
+        }
+        //GameEventManager.Raise(new GameOverEvent(player.Position, GameOverEvent.Killer.Npc));
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject == player.Transform.gameObject)
+        {
+            timeSinceLastDamage += Time.deltaTime;
+            if (timeSinceLastDamage > damageTimeInterval)
+            {
+                GameEventManager.Raise(new PlayerDamageEvent(damagePerInterval, PlayerDamageEvent.DamagedBy.NPC));
+                timeSinceLastDamage = 0f;
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject == player.Transform.gameObject)
+        {
+            timeSinceLastDamage = 0f;
+        }
     }
 
     private void OnDrawGizmos()

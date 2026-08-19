@@ -14,7 +14,7 @@ public class StatefulMonoBehaviour<T> : MonoBehaviour
     
     public void BackToPreviousState()
     {
-        fsm.ChangeState(fsm.PreviousState);
+        fsm.BackToPreviousState();
     }
     
     protected virtual void Update()

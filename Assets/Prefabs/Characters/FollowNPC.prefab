@@ -186,6 +186,7 @@ Transform:
   - {fileID: 3567353361266661235}
   - {fileID: 2325694915276165919}
   - {fileID: 4484151147801731716}
+  - {fileID: 2283061617209967539}
   m_Father: {fileID: 987020880291917259}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &430782144360164085
@@ -4926,7 +4927,39 @@ Transform:
   - {fileID: 9189939791238800974}
   - {fileID: 2671634255842540833}
   - {fileID: 3335719878197487642}
+  - {fileID: 3381858894580832096}
   m_Father: {fileID: 5108217922980080752}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7220573682190163909
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3381858894580832096}
+  m_Layer: 8
+  m_Name: Hand_Equip_L
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3381858894580832096
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7220573682190163909}
+  serializedVersion: 2
+  m_LocalRotation: {x: -1, y: 0.000000049010776, z: 0.000000040978183, w: 0.00000005963306}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8350137280181643005}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7226000491926072941
 GameObject:
@@ -5678,6 +5711,37 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.000000059604645, y: 0.86214674, z: -0.0708139}
     m_Extent: {x: 1.0245588, y: 0.9602604, z: 0.26703942}
   m_DirtyAABB: 0
+--- !u!1 &7639726987244530949
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2283061617209967539}
+  m_Layer: 8
+  m_Name: Hand_Equip_R
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2283061617209967539
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7639726987244530949}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2747434424544999223}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7662246865999611195
 GameObject:
   m_ObjectHideFlags: 0
@@ -6167,17 +6231,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6855558ce008ecb47a0de97cd2bcadb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCFollowerBehaviour
+  health:
+    easy: {fileID: 11400000, guid: bed01bba6f4def74e9d08aae74c0b35c, type: 2}
+    normal: {fileID: 11400000, guid: 54ccf0a132fa62a48860d2817803e7a8, type: 2}
+    hard: {fileID: 11400000, guid: c8cfecb4bd458124a8300d6b55d2d298, type: 2}
+  playerHeight: 1.8
+  leftHandEquipParent: {fileID: 7220573682190163909}
+  rightHandEquipParent: {fileID: 7639726987244530949}
   waypointTag: 
-  player: {fileID: 0}
   visionAngleXPatrol: 70
   visionAngleYPatrol: 12
   visionAngleXChase: 80
   visionAngleYChase: 18
   maxVisionDistance: 30
   heightOfEyes: 1.65
+  damagePerInterval: 5
+  damageTimeInterval: 1
   maxTimeForSearch: 4
   patrolOrChase: 0
   drawOnlyOnSelect: 1
+  currentWaypoint: 0
+  agent: {fileID: 0}
+  waypoints: []
+  currentVisionAngleX: 70
+  currentVisionAngleY: 12
+  isGamePaused: 0
 --- !u!135 &141418114045611231
 SphereCollider:
   m_ObjectHideFlags: 0

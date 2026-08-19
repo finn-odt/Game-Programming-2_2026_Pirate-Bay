@@ -81,6 +81,46 @@ namespace UnityConstantsGenerator
         /// </summary>
         Clouds = 14,
 
+        /// <summary>
+        /// PostProcessingVolumes
+        /// </summary>
+        PostProcessingVolumes = 15,
+
+        /// <summary>
+        /// Animal
+        /// </summary>
+        Animal = 16,
+
+        /// <summary>
+        /// Enemy
+        /// </summary>
+        Enemy = 26,
+
+        /// <summary>
+        /// MovingPlatform
+        /// </summary>
+        MovingPlatform = 27,
+
+        /// <summary>
+        /// VisualEffect
+        /// </summary>
+        VisualEffect = 28,
+
+        /// <summary>
+        /// Overlay
+        /// </summary>
+        Overlay = 29,
+
+        /// <summary>
+        /// SubCharacter
+        /// </summary>
+        SubCharacter = 30,
+
+        /// <summary>
+        /// Character
+        /// </summary>
+        Character = 31,
+
     }
 
     [System.Flags]
@@ -160,6 +200,46 @@ namespace UnityConstantsGenerator
         /// Clouds
         /// </summary>
         Clouds = 1 << 14,
+
+        /// <summary>
+        /// PostProcessingVolumes
+        /// </summary>
+        PostProcessingVolumes = 1 << 15,
+
+        /// <summary>
+        /// Animal
+        /// </summary>
+        Animal = 1 << 16,
+
+        /// <summary>
+        /// Enemy
+        /// </summary>
+        Enemy = 1 << 26,
+
+        /// <summary>
+        /// MovingPlatform
+        /// </summary>
+        MovingPlatform = 1 << 27,
+
+        /// <summary>
+        /// VisualEffect
+        /// </summary>
+        VisualEffect = 1 << 28,
+
+        /// <summary>
+        /// Overlay
+        /// </summary>
+        Overlay = 1 << 29,
+
+        /// <summary>
+        /// SubCharacter
+        /// </summary>
+        SubCharacter = 1 << 30,
+
+        /// <summary>
+        /// Character
+        /// </summary>
+        Character = 1 << 31,
 
     }
 

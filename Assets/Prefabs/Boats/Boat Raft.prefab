@@ -52,6 +52,73 @@ MonoBehaviour:
   drawOnlyOnSelect: 1
   drawForwardLine: 0
   shape: 1
+--- !u!1 &3703899409360562053
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5016167498024225355}
+  - component: {fileID: 4169683336239592278}
+  - component: {fileID: 3446302381986554914}
+  m_Layer: 7
+  m_Name: Boat NavMeshAgent (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5016167498024225355
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3703899409360562053}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.4899994, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7852037577537195894}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!195 &4169683336239592278
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3703899409360562053}
+  m_Enabled: 1
+  m_AgentTypeID: -334000983
+  m_Radius: 2
+  m_Speed: 5
+  m_Acceleration: 2
+  avoidancePriority: 50
+  m_AngularSpeed: 60
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &3446302381986554914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3703899409360562053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 936d2830c6c44f5abd2d8d6cdc2b9fb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoatNavMeshAgentHandler
 --- !u!1 &6757574718412201699
 GameObject:
   m_ObjectHideFlags: 0
@@ -63,7 +130,7 @@ GameObject:
   - component: {fileID: 7585452978353753042}
   - component: {fileID: 4305676889125006924}
   - component: {fileID: 4316637649096171879}
-  - component: {fileID: 9204026296049729875}
+  - component: {fileID: 6300611156581509525}
   m_Layer: 7
   m_Name: Boat
   m_TagString: Untagged
@@ -102,7 +169,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MovingShipBehaviour
   sailingActive: 0
   reachedDestination: 0
-  waypointTag: 
+  navAgentHandler: {fileID: 3446302381986554914}
+  rotationSpeed: 60
+  waypointTag: BoatWaypointD
 --- !u!65 &4316637649096171879
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -124,28 +193,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.98, y: 3, z: 3.3}
   m_Center: {x: 0.03, y: 1.39, z: 1.5}
---- !u!195 &9204026296049729875
-NavMeshAgent:
+--- !u!114 &6300611156581509525
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6757574718412201699}
   m_Enabled: 1
-  m_AgentTypeID: -334000983
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 95
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 1
-  m_ObstacleAvoidanceType: 4
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9ccb9cb210fb444f8daaac8d2c2f133, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Opsive.UltimateCharacterController::Opsive.UltimateCharacterController.Game.KinematicObject
 --- !u!1 &6932865339004965740
 GameObject:
   m_ObjectHideFlags: 0
@@ -177,6 +236,7 @@ Transform:
   m_Children:
   - {fileID: 9127929422552809454}
   - {fileID: 7585452978353753042}
+  - {fileID: 5016167498024225355}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7308343400898705558

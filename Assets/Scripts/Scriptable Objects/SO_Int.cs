@@ -12,22 +12,22 @@ public class IntegerSO : ScriptableObject
     public int InitialValue => initialValue;
     public int RuntimeValue => runtimeValue;
 
-    public void Add(int amount)
+    public int Add(int amount)
     {
-        runtimeValue += amount;
+        return (runtimeValue += amount);
     }
 
-    public void Subtract(int amount)
+    public int Subtract(int amount)
     {
         if (runtimeValue - amount < 0)
-            runtimeValue = 0;
+            return (runtimeValue = 0);
         else
-            runtimeValue -= amount;
+            return (runtimeValue -= amount);
     }
 
-    public void SetValue(int value)
+    public int SetValue(int value)
     {
-        runtimeValue = value < 0 ? 0 : value;
+        return (runtimeValue = value < 0 ? 0 : value);
     }
 
     public void ResetToInitialValue()

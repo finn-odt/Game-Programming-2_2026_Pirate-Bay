@@ -71,6 +71,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efb9bd5c929d475c8d2b53eeeb629539, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItem
+  eventOnTriggerEnter:
+    assemblyQualifiedTypeName: GameEvents.UIPickupIndicatorEvent, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   InventoryItemData: {fileID: 0}
   meshGameObject: {fileID: 6358670671573191283}
   amount: 1

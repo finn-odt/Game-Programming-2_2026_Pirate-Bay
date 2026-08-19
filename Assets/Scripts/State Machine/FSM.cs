@@ -50,4 +50,33 @@ public class FSM<T>
         if(CurrentState != null)
             CurrentState.Enter(Owner);
     }
+    
+    public void BackToPreviousState()
+    {
+        if (_previousState == null)
+            return;
+
+        var targetState = _previousState;
+
+        // exit old state
+        if (CurrentState != null)
+            CurrentState.Exit(Owner);
+
+        CurrentState = targetState;
+        _previousState = null;
+
+        // enter new state
+        if (CurrentState != null)
+            CurrentState.Enter(Owner);
+    }
+    
+    public void Clear()
+    {
+        if (CurrentState != null)
+            CurrentState.Exit(Owner);
+
+        CurrentState = null;
+        _previousState = null;
+        Owner = default;
+    }
 }

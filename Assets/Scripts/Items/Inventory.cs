@@ -46,6 +46,13 @@ public class Inventory : MonoBehaviour
         Instance = this;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this) {
+            Instance = null;
+        }
+    }
+
     public void InitializeInventory()
     {
         baggedItems = new List<InventoryListItem>();

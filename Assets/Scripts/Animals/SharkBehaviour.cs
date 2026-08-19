@@ -19,8 +19,16 @@ using Vector3 = UnityEngine.Vector3;
     using UnityEditor;
 #endif
 
-public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
+public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>, ILife
 {
+    [SerializeField] private int health = 50;
+    private int initHealth;
+
+    public Transform Transform => transform;
+    public Vector3 Position => transform.position;
+    public int Health => health;
+    public float HealthPercentage => health / (float)initHealth;
+    
     [InfoBox("Configuration")]
     [LabelText("Vision Angle X - Patrol (one-sided)"), Range(0f, 180f)] public float visionAngleXPatrol = 140f;
     [LabelText("Vision Angle Y - Patrol (one-sided)"), Range(0f, 180f)] public float visionAngleYPatrol = 12f;
@@ -29,7 +37,12 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
     public float maxVisionDistance;
     public float maxTargetRadius;
 
+    public Vector3 meshOffset = Vector3.zero;
     public float heightOfEyes = 0f;
+    
+    [SerializeField, Range(0, 100)] private int damagePerInterval;
+    [SerializeField, Unit("sec")] private float damageTimeInterval;
+    private float timeSinceLastDamage = 0f;
 
     [Header("Gizmos")]
     [SerializeField] private bool patrolOrChase;
@@ -38,9 +51,7 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
     [InfoBox("Do not configure!")]
 
     [HideInInspector] public IPlayer player;
-    [HideInInspector] public int currentWaypoint = 0;
     [HideInInspector] public NavMeshAgent agent;
-    [HideInInspector] public List<Transform> waypoints = new();
 
     [HideInInspector] public float currentVisionAngleX;
     [HideInInspector] public float currentVisionAngleY;
@@ -49,18 +60,49 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
 
     void Awake()
     {
+        fsm?.Clear();
         fsm = new FSM<SharkBehaviour>();
         fsm.Configure(this, new SharkIdleState());
 
         // get navmesh agent
         agent = GetComponentInChildren<NavMeshAgent>();
+
+        initHealth = health;
     }
 
     void Start()
     {
-        ServiceLocator.Global.Get(out player);
+        ServiceLocator.ForSceneOf(this).Get(out player);
     }
-    
+
+    protected override void Updated()
+    {
+        if (health <= 0)
+            Destroy(this.gameObject);
+    }
+
+    public void TakeDamage(int amount)
+    {
+        Debug.Log($"Shark Damage: {amount}");
+        if (amount <= 0)
+            return;
+        
+        health -= amount;
+    }
+
+    public void AddHealth(int amount)
+    {
+        if (amount <= 0)
+            return;
+        
+        health += amount;
+    }
+
+    public void SetInitialPosition(Vector3 pos)
+    {
+        // i think we don't need this ?
+    }
+
     public bool AgentReady()
     {
         return agent != null &&  agent.isActiveAndEnabled && agent.isOnNavMesh;
@@ -83,8 +125,33 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.layer == (int)LayerId.Player)
-            GameEventManager.Raise(new GameOverEvent(player.Position, GameOverEvent.Killer.Shark));
+        if (other.gameObject == player?.Transform.gameObject)
+        {
+            GameEventManager.Raise(new PlayerDamageEvent(damagePerInterval, PlayerDamageEvent.DamagedBy.Shark));
+            timeSinceLastDamage = 0f;
+        }
+        //GameEventManager.Raise(new GameOverEvent(player.Position, GameOverEvent.Killer.Npc));
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject == player?.Transform.gameObject)
+        {
+            timeSinceLastDamage += Time.deltaTime;
+            if (timeSinceLastDamage > damageTimeInterval)
+            {
+                GameEventManager.Raise(new PlayerDamageEvent(damagePerInterval, PlayerDamageEvent.DamagedBy.Shark));
+                timeSinceLastDamage = 0f;
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject == player?.Transform.gameObject)
+        {
+            timeSinceLastDamage = 0f;
+        }
     }
 
     private void OnDrawGizmos()
@@ -92,7 +159,7 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
         if(drawOnlyOnSelect)
             return;
 
-        Vector3 npcPos = transform.position + new Vector3(0, heightOfEyes, 0);
+        Vector3 npcPos = transform.position + meshOffset + new Vector3(0, heightOfEyes, 0);
         Debug.DrawRay(npcPos, transform.forward * maxVisionDistance, Color.green);
 
         currentVisionAngleX = patrolOrChase ? visionAngleXChase : visionAngleXPatrol;  // false: patrol, true: chase
@@ -119,7 +186,7 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>
         if(!drawOnlyOnSelect)
             return;
 
-        Vector3 npcPos = transform.position + new Vector3(0, heightOfEyes, 0);
+        Vector3 npcPos = transform.position + meshOffset + new Vector3(0, heightOfEyes, 0);
         Debug.DrawRay(npcPos, transform.forward * maxVisionDistance, Color.green);
             
         currentVisionAngleX = patrolOrChase ? visionAngleXChase : visionAngleXPatrol;  // false: patrol, true: chase

@@ -18,6 +18,8 @@ TagManager:
   - WaypointD
   - BoatWaypointE
   - GravesA
+  - KeyboardUI
+  - GamepadUI
   layers:
   - Default
   - TransparentFX
@@ -34,6 +36,8 @@ TagManager:
   - UnderwaterGround
   - Items
   - Clouds
+  - PostProcessingVolumes
+  - Animal
   - 
   - 
   - 
@@ -43,14 +47,12 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Enemy
+  - MovingPlatform
+  - VisualEffect
+  - Overlay
+  - SubCharacter
+  - Character
   m_SortingLayers:
   - name: Default
     uniqueID: 0

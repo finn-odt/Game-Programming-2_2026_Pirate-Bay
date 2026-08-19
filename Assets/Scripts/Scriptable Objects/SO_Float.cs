@@ -12,22 +12,22 @@ public class FloatSO : ScriptableObject
     public float InitialValue => initialValue;
     public float RuntimeValue => runtimeValue;
 
-    public void Add(float amount)
+    public float Add(float amount)
     {
-        runtimeValue += amount;
+        return (runtimeValue += amount);
     }
 
-    public void Subtract(float amount)
+    public float Subtract(float amount)
     {
         if (runtimeValue - amount < 0)
-            runtimeValue = 0;
+            return (runtimeValue = 0);
         else
-            runtimeValue -= amount;
+            return (runtimeValue -= amount);
     }
 
-    public void SetValue(float value)
+    public float SetValue(float value)
     {
-        runtimeValue = value < 0 ? 0 : value;
+        return (runtimeValue = value < 0 ? 0 : value);
     }
 
     public void ResetToInitialValue()

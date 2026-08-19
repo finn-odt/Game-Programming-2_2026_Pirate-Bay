@@ -32,7 +32,7 @@ public class InventoryUI : MonoBehaviour
     public float dragDistanceThreshold;
 
     // action for opening/closing the inventory [bindings are set in Awake()]
-    private readonly InputAction toggleInventoryAction = new("Toggle Inventory", InputActionType.Button);
+    //private readonly InputAction toggleInventoryAction = new("Toggle Inventory", InputActionType.Button);
 
     private struct Hand
     {
@@ -92,14 +92,14 @@ public class InventoryUI : MonoBehaviour
             document = GetComponent<UIDocument>();
         }
 
-        toggleInventoryAction.AddBinding("<Keyboard>/tab");
-        toggleInventoryAction.AddBinding("<Gamepad>/leftShoulder");
+        //toggleInventoryAction.AddBinding("<Keyboard>/tab");
+        //toggleInventoryAction.AddBinding("<Gamepad>/leftShoulder");
     }
 
     private void OnEnable()
     {
-        toggleInventoryAction.Enable();
-        toggleInventoryAction.performed += OnToggleInventory;
+        //toggleInventoryAction.Enable();
+        //toggleInventoryAction.performed += OnToggleInventory;
 
         GameEventManager.AddListener<InventoryChangedEvent>(OnInventoryChanged);
         GameEventManager.AddListener<GameStateChangedEvent>(OnGameStateChange);
@@ -107,6 +107,8 @@ public class InventoryUI : MonoBehaviour
         GameEventManager.AddListener<OpenInventoryEvent>(OnExternalOpenCommand);
         
         GameEventManager.AddListener<RemoveItemFromHandForUseEvent>(OnItemRemoveDueToUse);
+        
+        GameEventManager.AddListener<ToggleInventoryEvent>(OnToggleInventory);
     }
 
     private void OnDisable()
@@ -117,9 +119,11 @@ public class InventoryUI : MonoBehaviour
         GameEventManager.RemoveListener<OpenInventoryEvent>(OnExternalOpenCommand);
         
         GameEventManager.RemoveListener<RemoveItemFromHandForUseEvent>(OnItemRemoveDueToUse);
+        
+        GameEventManager.RemoveListener<ToggleInventoryEvent>(OnToggleInventory);
 
-        toggleInventoryAction.performed -= OnToggleInventory;
-        toggleInventoryAction.Disable();
+        //toggleInventoryAction.performed -= OnToggleInventory;
+        //toggleInventoryAction.Disable();
     }
 
     private void OnExternalCloseCommand(CloseInventoryEvent gameEvent)
@@ -146,7 +150,7 @@ public class InventoryUI : MonoBehaviour
     {
         BindDocument();
 
-        ServiceLocator.Global.Get(out player);
+        ServiceLocator.ForSceneOf(this).Get(out player);
 
         // load hand equipment
         GameConfiguration.GetHandEquipmentData(out string leftItemID, out string rightItemID, out int leftQuantity, out int rightQuantity);
@@ -160,11 +164,15 @@ public class InventoryUI : MonoBehaviour
         SetOpen(false);
     }
 
-    private void OnToggleInventory(InputAction.CallbackContext context)
+    private void OnToggleInventory(ToggleInventoryEvent e)
     {
-        // only openable in Play-Mode
+        Debug.Log($"InventoryToggle - {currentGameState.ToString()}");
+        
+        // only toggleable in Play-Mode (& Inventory-Mode of course)
         if (currentGameState != GameStateChangedEvent.GameState.Play && currentGameState != GameStateChangedEvent.GameState.Inventory)
             return;
+        
+        Debug.Log("Toggle Inventory!");
         
         SetOpen(!isOpen);
         // isOpen is now set correctly, raise event for GameState
@@ -660,7 +668,7 @@ public class InventoryUI : MonoBehaviour
 
         InventoryItemDataSO itemData = itemDatabase.GetItemById(itemID);
         
-        GameObject droppedItem = Instantiate(itemPrefab, dropOrigin.position, Quaternion.identity);
+        GameObject droppedItem = Instantiate(itemPrefab, player.DropOrigin.position, Quaternion.identity);
 
         CollectableItem itemScript = droppedItem.GetComponentInChildren<CollectableItem>();
         itemScript.InventoryItemData = itemData;
