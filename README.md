@@ -67,4 +67,8 @@ In addition to the standard packages, the following Unity packages were used:
 | B (Button East)    | Decline conversation    |
 | Select    | Restart Game (when Game Over or Won)    |
 
+## What you can do
 
+You can walk, jump, run, swim, dive and climb specific ladders (two in the game). You can use items in your hands (that you can equip in the inventory after picking up objects), but not all items have functionalities (only bomb and smoke grenade I think). You can interact with objects (Canons, Loot Chests, Sailors), and therefore also collect money, spend money and travel on boats like a Taxi (but be careful, they have strict routes and they won't wait for you). 
+There are NPCs that follow you, as soon as you are close enough and in their vision field. Be careful, they run! If they come close, they hurt you (yes, the hit-animation is missing due to the Animator being controlled the the ThirdPersonStarterAI-code), but if they loose you out of seight, they will go back to patroling. There are also sharks that can hunt and hurt you in the water.
+Play the game and find out all funny interactions and mechanics :)
