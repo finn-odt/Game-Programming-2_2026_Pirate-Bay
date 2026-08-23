@@ -103131,8 +103131,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 770172004}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.8424802, z: 0, w: 0.5387273}
-  m_LocalPosition: {x: -363.8, y: 4.14, z: -83.20001}
+  m_LocalRotation: {x: 0, y: 0.91740775, z: 0, w: 0.39794868}
+  m_LocalPosition: {x: -248.2, y: 5.2, z: 34.300003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -252678,7 +252678,7 @@ MonoBehaviour:
     Kyle Rhoads (Wingman)
 
 
-    Starikcetin
+    Neptaco
     (Unity Constants Generator)
 
 
