@@ -139,10 +139,13 @@ namespace GameEvents
     {
         public enum Killer
         {
+            Unknown,
             Npc,
             Zombie,
             Shark,
-            Drowned
+            Drowned,
+            Falling,
+            Explosion
         }
         
         public readonly Vector3 deathPosition;
@@ -314,8 +317,8 @@ namespace GameEvents
         {
             NPC,
             Shark,
-            Water,
-            Explosion
+            Explosion,
+            Water
         }
         
         public readonly DamagedBy damagedBy;
@@ -535,7 +538,7 @@ namespace GameEvents
             return true;
         }
     }
-    
+
     public class UIPickupIndicatorEvent : GameEvent
     {
 
@@ -671,6 +674,30 @@ namespace GameEvents
         {
             Debug.Log("EVENT - UCCClimbFromWaterImpossibleEvent");
         }
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class PlayerReachedGoalEvent : GameEvent
+    {
+
+        public PlayerReachedGoalEvent()
+        {}
+        
+        public override bool isValid ()
+        {
+            return true;
+        }
+    }
+    
+    public class GameWonEvent : GameEvent
+    {
+
+        public GameWonEvent()
+        {}
         
         public override bool isValid ()
         {

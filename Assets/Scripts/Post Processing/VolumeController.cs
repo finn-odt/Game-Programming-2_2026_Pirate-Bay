@@ -29,6 +29,9 @@ public class VolumeController : MonoBehaviour
         }
     }
 
+    [SerializeField] public Volume waterEffectVolume;
+    [SerializeField] public Volume gameOverEffectVolume;
+
     private void Start()
     {
         if(waterEffectVolume)
@@ -48,7 +51,7 @@ public class VolumeController : MonoBehaviour
         GameEventManager.RemoveListener<GameOverEvent>(OnGameOver);
         GameEventManager.RemoveListener<CameraUnderWaterEvent>(OnWaterMode);
     }
-
+    
     private void OnGameOver(GameOverEvent e)
     {
         DisableEffect(waterEffectVolume);
@@ -77,9 +80,6 @@ public class VolumeController : MonoBehaviour
         else
             DisableEffect(waterEffectVolume);
     }
-
-    [SerializeField] public Volume waterEffectVolume;
-    [SerializeField] public Volume gameOverEffectVolume;
     
     public void EnableEffect(Volume effect)
     {

@@ -12,6 +12,8 @@ public abstract class IInteractable : MonoBehaviour
     protected bool playerInTrigger = false;
     protected bool isGamePaused = false;
     
+    protected bool canBeInteractedWith = true;
+    
     [SerializeField] protected GameEventTypeReference eventOnTriggerEnter;
     
     protected void OnEnable()
@@ -42,7 +44,7 @@ public abstract class IInteractable : MonoBehaviour
 
     private void OnInteraction(PlayerInteractionRequestEvent e)  // wrapper for Pause-Handling
     {
-        if (isGamePaused || !playerInTrigger)
+        if (isGamePaused || !playerInTrigger || !canBeInteractedWith)
             return;
         
         OnPlayerInteraction(e);
@@ -62,9 +64,12 @@ public abstract class IInteractable : MonoBehaviour
         
         if(other.gameObject.layer == (int)LayerId.Player) {
             playerInTrigger = true;
-            GameEventManager.Raise(new InteractionPossibleEvent(true, gameObject));
-            if (eventOnTriggerEnter != null && eventOnTriggerEnter.Type != null)
-                eventOnTriggerEnter.Raise();  // raise this Game Event Reference
+            if (canBeInteractedWith)
+            {
+                GameEventManager.Raise(new InteractionPossibleEvent(true, gameObject));
+                if (eventOnTriggerEnter != null && eventOnTriggerEnter.Type != null)
+                    eventOnTriggerEnter.Raise(); // raise this Game Event Reference
+            }
         }
     }
 

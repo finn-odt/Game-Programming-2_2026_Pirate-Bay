@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GameEvents;
+using MoreMountains.Feedbacks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,10 +13,13 @@ public class LootChest : IInteractable
     private Transform lid;
     private int meshIdx;
 
+    private ParticleSystem openingParticleEffect;
+
     private bool isOpen = false, isDeactivated = false;
     [SerializeField] private float lidSpeed = 40f;
     [SerializeField] private int coinAmount = 15;
     [SerializeField] private AudioClip coinSound;
+    [SerializeField] private MMF_Player feedbackPlayer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -26,6 +30,8 @@ public class LootChest : IInteractable
         {
             meshes.Add(child);
         }
+        
+        openingParticleEffect = GetComponentInChildren<ParticleSystem>();
 
         // random visual (of given meshes)
         int entityHash = gameObject.GetEntityId().GetHashCode();
@@ -87,8 +93,14 @@ public class LootChest : IInteractable
     {
         if(playerInTrigger && !isDeactivated && !isOpen) {
             isOpen = true;
+            canBeInteractedWith = false;
+            feedbackPlayer?.PlayFeedbacks();
             // deactivate interaction indicator
             GameEventManager.Raise(new InteractionPossibleEvent(false, gameObject));
+            if (openingParticleEffect != null) {
+                openingParticleEffect.time = 0;
+                openingParticleEffect.Play();
+            }
         }
     }
 }

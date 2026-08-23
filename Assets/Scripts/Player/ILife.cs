@@ -14,6 +14,6 @@ namespace SLTypes
         void AddHealth(int amount);
         void TakeDamage(int amount);
 
-        void SetInitialPosition(Vector3 pos);
+        void SetInitialPosition(Vector3 pos, Quaternion rot);
     }
 }

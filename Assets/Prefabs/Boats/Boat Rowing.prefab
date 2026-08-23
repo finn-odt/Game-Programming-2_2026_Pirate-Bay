@@ -77,10 +77,11 @@ Transform:
   m_GameObject: {fileID: 1905269662991251900}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 27.999989, y: 0, z: -142.1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5051499032362947947}
   - {fileID: 6065237551883786114}
   - {fileID: 8641621274857574802}
   - {fileID: 1110245637133356652}
@@ -116,7 +117,7 @@ Transform:
   m_GameObject: {fileID: 2727554489992551093}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.93709934, z: -0, w: 0.34906283}
-  m_LocalPosition: {x: 15.200005, y: 2.7872462, z: -124.1}
+  m_LocalPosition: {x: 0, y: 0.37, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -260,6 +261,58 @@ Transform:
   - {fileID: 3648565555226469323}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6037497886515612914
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5051499032362947947}
+  - component: {fileID: 30942361796651465}
+  m_Layer: 7
+  m_Name: Target 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5051499032362947947
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6037497886515612914}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.25, y: 2.17, z: -0.27}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3190117925299512062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &30942361796651465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6037497886515612914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86d920d8a69fbb44b848b69899e8737e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GizmoIndicator
+  radius: 1
+  color: {r: 1, g: 0.009663287, b: 0, a: 1}
+  usePosAndScaleOfObject: 0
+  drawFilled: 1
+  drawWire: 1
+  drawOnlyOnSelect: 1
+  drawForwardLine: 0
+  shape: 1
 --- !u!1 &6566655043859674462
 GameObject:
   m_ObjectHideFlags: 0
@@ -339,7 +392,7 @@ Transform:
   m_GameObject: {fileID: 6793151853450048284}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.4899994, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -535,6 +588,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SailorNPC
       objectReference: {fileID: 0}
+    - target: {fileID: 8940134570289119177, guid: 82a4e6bb8273cbb448f85ddd27358b2e, type: 3}
+      propertyPath: shipBehaviour
+      value: 
+      objectReference: {fileID: 863359792512545872}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GameEvents;
 using Opsive.UltimateCharacterController.Character;
 using Opsive.UltimateCharacterController.Character.Abilities;
+using Opsive.UltimateCharacterController.AddOns.Swimming;
 using UnityEngine;
 
 public class UCCAbilityAvailabilityMonitor : MonoBehaviour
@@ -49,10 +50,14 @@ public class UCCAbilityAvailabilityMonitor : MonoBehaviour
     [SerializeField] private bool raiseInitialImpossibleEvents = false;
 
     [SerializeField] private List<AbilityPossibleBinding> bindings = new();
-
+    
     private UltimateCharacterLocomotion characterLocomotion;
+    private CharacterLayerManager characterLayerManager;
+
     private Ability[] abilities;
     private readonly Dictionary<Ability, bool> lastPossibleByAbility = new();
+
+    private RaycastHit underwaterCheckHit;
 
     private float nextCheckTime;
 
@@ -60,8 +65,9 @@ public class UCCAbilityAvailabilityMonitor : MonoBehaviour
     {
         if (character == null)
             character = gameObject;
-
+        
         characterLocomotion = character.GetComponent<UltimateCharacterLocomotion>();
+        characterLayerManager = character.GetComponent<CharacterLayerManager>();
 
         if (characterLocomotion == null)
         {
@@ -76,11 +82,22 @@ public class UCCAbilityAvailabilityMonitor : MonoBehaviour
     private void OnEnable()
     {
         lastPossibleByAbility.Clear();
+        nextCheckTime = Time.time;
+    }
+
+    private bool hasStarted = false;
+    private void Start()
+    {
+        hasStarted = true;
         CheckAbilities(true);
+        nextCheckTime = Time.time + checkInterval;
     }
 
     private void Update()
     {
+        if (!hasStarted)
+            return;
+        
         if (Time.time < nextCheckTime)
             return;
 
@@ -97,11 +114,10 @@ public class UCCAbilityAvailabilityMonitor : MonoBehaviour
         {
             Ability ability = abilities[i];
             
-            // could skip those that are not in bindings
-            if (!IsAbilityInBindingsList(ability))
-                return;
-
             if (ability == null)
+                continue;
+
+            if (!IsAbilityInBindingsList(ability))
                 continue;
 
             bool isPossible = IsAbilityPossible(ability);
@@ -135,10 +151,56 @@ public class UCCAbilityAvailabilityMonitor : MonoBehaviour
         if (onlyCheckEnabledAbilities && !ability.Enabled)
             return false;
 
+        // Special case:
+        // For Swim we want to know whether the player can dive
+        // from surface swimming into underwater swimming.
+        //      => water depth > minDepth & isSwimming
+        if (ability is Swim swim)
+            return IsUnderwaterSwimPossible(swim);
+
         if (hideWhileAbilityIsActive && ability.IsActive)
             return false;
 
         return ability.CanStartAbility();
+    }
+    
+    private bool IsUnderwaterSwimPossible(Swim swim)
+    {
+        if (swim == null)
+            return false;
+
+        // The Swim ability must already be running.
+        if (!swim.Enabled || !swim.IsActive)
+            return false;
+
+        // Underwater swimming must be enabled in Opsive.
+        if (!swim.CanSwimUnderwater)
+            return false;
+
+        // Opsive Swim states:
+        // 0 = EnterWaterFromAir
+        // 1 = SurfaceSwim
+        // 2 = UnderwaterSwim
+        // 3 = ExitWaterMoving
+        // 4 = ExitWaterIdle
+        const int SurfaceSwimState = 1;
+
+        if (swim.AbilityIntData != SurfaceSwimState)
+            return false;
+
+        if (characterLayerManager == null)
+            return false;
+
+        // Is there enough free space underneath the character
+        // to transition into underwater swimming?
+        bool blockedBelow = characterLocomotion.SingleCast(
+            -characterLocomotion.Up,
+            Vector3.zero,
+            swim.MinUnderwaterSwimDepth,
+            characterLayerManager.SolidObjectLayers,
+            ref underwaterCheckHit);
+
+        return !blockedBelow;
     }
 
     private void RaiseForAbility(Ability ability, bool isPossible)

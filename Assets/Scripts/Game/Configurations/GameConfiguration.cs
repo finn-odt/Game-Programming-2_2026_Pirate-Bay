@@ -8,6 +8,14 @@ using UnityEngine;
 
 namespace Configurations
 {
+    public enum SaveDataState
+    {
+        NoSaveFile,
+        Invalid,
+        Default,
+        Modified
+    }
+    
     public static class GameConfiguration
     {
         private static readonly string ConfigPath = Path.Combine(Application.persistentDataPath, "game.config");
@@ -132,6 +140,32 @@ namespace Configurations
         public static void SaveDifficulty(GameDifficulty difficulty)
         {
             Data.gameDifficulty = difficulty;
+        }
+        
+        public static SaveDataState GetSaveDataState()
+        {
+            if (!File.Exists(ConfigPathEncrypted))
+                return SaveDataState.NoSaveFile;
+
+            try
+            {
+                string json = SaveEncryption.LoadEncryptedJson(ConfigPathEncrypted);
+                Configuration savedData = JsonUtility.FromJson<Configuration>(json);
+
+                if (savedData == null)
+                    return SaveDataState.Invalid;
+
+                Configuration defaultData = new Configuration();
+
+                string savedJson = JsonUtility.ToJson(savedData);
+                string defaultJson = JsonUtility.ToJson(defaultData);
+
+                return savedJson == defaultJson ? SaveDataState.Default : SaveDataState.Modified;
+            }
+            catch
+            {
+                return SaveDataState.Invalid;
+            }
         }
     }
 }

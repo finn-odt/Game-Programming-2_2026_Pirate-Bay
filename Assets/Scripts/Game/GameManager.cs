@@ -5,6 +5,7 @@ using Configurations;
 using ObjectFactory;
 using Player;
 using SLTypes;
+using Systems.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityServiceLocator;
@@ -41,6 +42,7 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
     [HideInInspector] private IPlayer player;
     private Vector3 lastKnownPlayerPosition;
     private int lastKnownCollectedCoins = 0, lastKnownPlayerHealth = 100;
+    [SerializeField] private Transform spawnPoint;
     [SerializeField] private bool useSavedPlayerPosition = false;
     
     private void Start()
@@ -64,7 +66,7 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
     }
 
     //private int coinAmount = 0;
-    [HideInInspector] public bool isGamePaused = false, restartRequested = false, isInventoryOpen = false;
+    [HideInInspector] public bool isGamePaused = false, isInventoryOpen = false;
     [HideInInspector] public bool gameOver = false, reachedGoal = false;
 
     public GameDifficulty gameDifficulty { get; private set; } = GameDifficulty.Easy;
@@ -75,6 +77,7 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
         GameEventManager.AddListener<GameOverEvent>(OnGameOver);
         GameEventManager.AddListener<ReachedGoalEvent>(OnReachingGoal);
         GameEventManager.AddListener<InventoryVisibilityChangeEvent>(OnInventoryToggle);
+        GameEventManager.AddListener<PlayerReachedGoalEvent>(OnPlayerReachedGoal);
     }
 
     void OnDisable()
@@ -83,6 +86,7 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
         GameEventManager.RemoveListener<GameOverEvent>(OnGameOver);
         GameEventManager.RemoveListener<ReachedGoalEvent>(OnReachingGoal);
         GameEventManager.RemoveListener<InventoryVisibilityChangeEvent>(OnInventoryToggle);
+        GameEventManager.RemoveListener<PlayerReachedGoalEvent>(OnPlayerReachedGoal);
         
         // no saving of data, if GameState = GameOver
         if (fsm.CurrentState.GetType() == typeof(GameStateLost))
@@ -93,6 +97,11 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
         GameConfiguration.SaveHealthPoints(lastKnownPlayerHealth);
         GameConfiguration.SavePlayer(lastKnownPlayerPosition);
         GameConfiguration.Save();  // save inventory on game closed
+    }
+
+    private void OnPlayerReachedGoal(PlayerReachedGoalEvent e)
+    {
+        reachedGoal = true;
     }
 
     private void OnInventoryToggle(InventoryVisibilityChangeEvent e)
@@ -114,7 +123,6 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
                 StartCoroutine(StopTimeAfterDeath(1.75f));
                 break;
         }
-        
     }
 
     private IEnumerator StopTimeAfterDeath(float delay)
@@ -125,6 +133,10 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
 
     private void OnReachingGoal(ReachedGoalEvent e)
     {
+        if (gameOver)
+            return;
+        
+        GameEventManager.Raise(new GameWonEvent());
         reachedGoal = true;
     }
 
@@ -169,12 +181,37 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
         // Restore from Configuration Save File
         gameDifficulty = GameConfiguration.Data.gameDifficulty;  // difficulty from Configuration-File
         GameEventManager.Raise(new GameDifficultyChangedEvent(gameDifficulty));
-        if(useSavedPlayerPosition)
-            player.SetInitialPosition(GameConfiguration.Data.playerPos);  // player position from Configuration-File
+        
+        SaveDataState state = GameConfiguration.GetSaveDataState();
+        Debug.Log($"Save state: {state}");
+        Debug.Log($"Config player pos: {GameConfiguration.Data.playerPos}");
+        Debug.Log($"Spawn point pos: {spawnPoint.position}");
+        Debug.Log($"Player pos BEFORE: {player.Position}");
+        switch (state)
+        {
+            case SaveDataState.Modified:
+                if (useSavedPlayerPosition)
+                {
+                    Debug.Log("SPAWNING AT SAVED POSITION");
+                    player.SetInitialPosition(GameConfiguration.Data.playerPos, Quaternion.identity);
+                }
+                else
+                {
+                    Debug.Log("Saved data exists, but saved position disabled.");
+                    player.SetInitialPosition(spawnPoint.position, Quaternion.LookRotation(spawnPoint.forward));
+                }
+                break;
+
+            default:
+                Debug.Log("SPAWNING AT SPAWN POINT");
+                player.SetInitialPosition(spawnPoint.position, Quaternion.LookRotation(spawnPoint.forward));
+                break;
+        }
+        Debug.Log($"Player pos AFTER SetInitialPosition: {player.Position}");
+            
         player.SetInitialCoins(GameConfiguration.Data.coinAmount);  // collected coins from Configuration-File
         Inventory.Instance.InitializeInventory();  // load Inventory from Configurations-File (if possible)
         
-        restartRequested = false;
         isGamePaused = false;
         gameOver = false;
         reachedGoal = false;
@@ -198,15 +235,15 @@ public class GameManager : StatefulMonoBehaviour<GameManager>
         GameEventManager.Clear();
         
         // reload scene
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneLoader.Instance.LoadSceneGroup(SceneLoader.Instance.ActiveSceneGroupIndex);
     }
 
-    public void RestartRequest()
+    public void RequestRestart()
     {
-        Debug.Log("Restart Requested True in Update()");
+        Debug.Log("Restart Requested GameManager");
         if (gameOver)
         {
-            ResetGame();  // resets restartRequested
+            ResetGame();
         }
     }
     

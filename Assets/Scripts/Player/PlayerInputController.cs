@@ -88,6 +88,7 @@ public class PlayerInputController : MonoBehaviour
         GameEventManager.AddListener<PlayerSwordAttackEvent>(OnSwordAttack);
         
         GameEventManager.AddListener<PlayerSwimEvent>(ToggleSwimming);
+        GameEventManager.AddListener<GameOverEvent>(OnGameOver);
         
         InputUser.onChange += OnInputUserChange;
 
@@ -110,6 +111,7 @@ public class PlayerInputController : MonoBehaviour
         GameEventManager.RemoveListener<PlayerSwordAttackEvent>(OnSwordAttack);
 
         GameEventManager.RemoveListener<PlayerSwimEvent>(ToggleSwimming);
+        GameEventManager.RemoveListener<GameOverEvent>(OnGameOver);
             
         InputUser.onChange -= OnInputUserChange;
         
@@ -119,6 +121,13 @@ public class PlayerInputController : MonoBehaviour
             dToggleFlyingMode.canceled -= OnToggleFlying;
             dToggleFlyingMode.Disable();
         }*/
+    }
+
+    public void OnGameOver(GameOverEvent e)
+    {
+        // activate PlayerInput-component again, as UCC deactivates it, when Die-Ability starts
+        // to achieve the same, the GameOverUCCLock disables the InputPlayerProxy from UCC
+        _playerInput.enabled = true;
     }
     
     private void Awake()

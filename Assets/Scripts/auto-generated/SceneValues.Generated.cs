@@ -7,30 +7,102 @@ namespace UnityConstantsGenerator
     public class SceneId
     {
         /// <summary>
-        /// <para>0: SampleScene</para>
-        /// Assets/Scenes/SampleScene.unity
+        /// <para>0: SceneLoader</para>
+        /// Assets/Scenes/SceneLoader.unity
         /// </summary>
-        public const int SampleScene = 0;
+        public const int SceneLoader = 0;
+
+        /// <summary>
+        /// <para>1: IntroScene</para>
+        /// Assets/Scenes/IntroScene.unity
+        /// </summary>
+        public const int IntroScene = 1;
+
+        /// <summary>
+        /// <para>2: CutScene-1</para>
+        /// Assets/Scenes/CutScene-1.unity
+        /// </summary>
+        public const int CutScene1 = 2;
+
+        /// <summary>
+        /// <para>3: PirateGame</para>
+        /// Assets/Scenes/PirateGame.unity
+        /// </summary>
+        public const int PirateGame = 3;
+
+        /// <summary>
+        /// <para>4: CutScene-2</para>
+        /// Assets/Scenes/CutScene-2.unity
+        /// </summary>
+        public const int CutScene2 = 4;
 
     }
 
     public class SceneName
     {
         /// <summary>
-        /// <para>0: SampleScene</para>
-        /// Assets/Scenes/SampleScene.unity
+        /// <para>0: SceneLoader</para>
+        /// Assets/Scenes/SceneLoader.unity
         /// </summary>
-        public const string SampleScene = "SampleScene";
+        public const string SceneLoader = "SceneLoader";
+
+        /// <summary>
+        /// <para>1: IntroScene</para>
+        /// Assets/Scenes/IntroScene.unity
+        /// </summary>
+        public const string IntroScene = "IntroScene";
+
+        /// <summary>
+        /// <para>2: CutScene-1</para>
+        /// Assets/Scenes/CutScene-1.unity
+        /// </summary>
+        public const string CutScene1 = "CutScene-1";
+
+        /// <summary>
+        /// <para>3: PirateGame</para>
+        /// Assets/Scenes/PirateGame.unity
+        /// </summary>
+        public const string PirateGame = "PirateGame";
+
+        /// <summary>
+        /// <para>4: CutScene-2</para>
+        /// Assets/Scenes/CutScene-2.unity
+        /// </summary>
+        public const string CutScene2 = "CutScene-2";
 
     }
 
     public class ScenePath
     {
         /// <summary>
-        /// <para>0: SampleScene</para>
-        /// Assets/Scenes/SampleScene.unity
+        /// <para>0: SceneLoader</para>
+        /// Assets/Scenes/SceneLoader.unity
         /// </summary>
-        public const string SampleScene = "Assets/Scenes/SampleScene.unity";
+        public const string SceneLoader = "Assets/Scenes/SceneLoader.unity";
+
+        /// <summary>
+        /// <para>1: IntroScene</para>
+        /// Assets/Scenes/IntroScene.unity
+        /// </summary>
+        public const string IntroScene = "Assets/Scenes/IntroScene.unity";
+
+        /// <summary>
+        /// <para>2: CutScene-1</para>
+        /// Assets/Scenes/CutScene-1.unity
+        /// </summary>
+        public const string CutScene1 = "Assets/Scenes/CutScene-1.unity";
+
+        /// <summary>
+        /// <para>3: PirateGame</para>
+        /// Assets/Scenes/PirateGame.unity
+        /// </summary>
+        public const string PirateGame = "Assets/Scenes/PirateGame.unity";
+
+        /// <summary>
+        /// <para>4: CutScene-2</para>
+        /// Assets/Scenes/CutScene-2.unity
+        /// </summary>
+        public const string CutScene2 = "Assets/Scenes/CutScene-2.unity";
 
     }
 

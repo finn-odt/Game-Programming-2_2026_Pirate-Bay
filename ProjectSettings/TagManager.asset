@@ -20,6 +20,13 @@ TagManager:
   - GravesA
   - KeyboardUI
   - GamepadUI
+  - BoatWaypointF
+  - BoatWaypointG
+  - WaypointE
+  - WaypointF
+  - WaypointG
+  - WaypointH
+  - WaypointK
   layers:
   - Default
   - TransparentFX

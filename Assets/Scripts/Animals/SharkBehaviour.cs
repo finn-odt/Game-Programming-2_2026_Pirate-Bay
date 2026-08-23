@@ -98,9 +98,10 @@ public class SharkBehaviour : StatefulMonoBehaviour<SharkBehaviour>, ILife
         health += amount;
     }
 
-    public void SetInitialPosition(Vector3 pos)
+    public void SetInitialPosition(Vector3 pos, Quaternion rot)
     {
-        // i think we don't need this ?
+        agent.nextPosition = pos;
+        agent.transform.rotation = rot;
     }
 
     public bool AgentReady()

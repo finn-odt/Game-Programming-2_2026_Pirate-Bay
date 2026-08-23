@@ -21,12 +21,7 @@ public class GameStateLost : IFSMState<GameManager>
 
     public void Reason(GameManager e)
     {
-        // never change, GameManager.Reset() will change state
-        if(e.restartRequested)
-        {
-            // reset GameManager
-            e.ResetGame();
-        }
+        
     }
 
     public void Update(GameManager e)

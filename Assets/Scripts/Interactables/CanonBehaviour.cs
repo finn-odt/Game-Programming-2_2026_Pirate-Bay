@@ -1,5 +1,6 @@
 using System.Collections;
 using GameEvents;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -9,8 +10,6 @@ public class CanonBehaviour : IInteractable
     [SerializeField] private ParticleSystem smokeEffect;
     [SerializeField] private VisualEffect destroyedEffect, explosionEffect;
     [SerializeField] private AudioClip canonSound, explosionSound;
-
-    private bool isDeactivated = false;
 
     private IEnumerator DestroyCanon()
     {
@@ -35,8 +34,8 @@ public class CanonBehaviour : IInteractable
 
     protected override void OnPlayerInteraction(PlayerInteractionRequestEvent e)
     {
-        if(playerInTrigger && !isDeactivated) {
-            isDeactivated = true;
+        if(playerInTrigger) {
+            canBeInteractedWith = false;
             
             // start interaction
             smokeEffect.Play();  // play one time

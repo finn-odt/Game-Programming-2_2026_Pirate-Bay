@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using GameEvents;
 using Opsive.UltimateCharacterController.Traits;
+using Systems.SceneManagement;
 using Attribute = Opsive.UltimateCharacterController.Traits.Attribute;
 using TMPro;
 using UnityEngine;
@@ -35,10 +36,10 @@ public class UIManager : MonoBehaviour
     {
         public Canvas canvas;
         public TMP_Dropdown difficultyDropdown;
-        public Slider mouseXSensitivitySlider;
-        public Slider mouseYSensitivitySlider;
-        public Slider gamepadXSensitivitySlider;
-        public Slider gamepadYSensitivitySlider;
+        //public Slider mouseXSensitivitySlider;
+        //public Slider mouseYSensitivitySlider;
+        //public Slider gamepadXSensitivitySlider;
+        //public Slider gamepadYSensitivitySlider;
     }
 
     [Serializable]
@@ -48,9 +49,16 @@ public class UIManager : MonoBehaviour
         public TextMeshProUGUI killedByFillIn;
     }
 
+    [Serializable]
+    public struct WinningCanvas
+    {
+        public Canvas canvas;
+    }
+
     public GameCanvas gameCanvas;
     public MenuCanvas menuCanvas;
     public GameOverCanvas gameOverCanvas;
+    public WinningCanvas winningCanvas;
 
     private float healthTargetFillAmount = 1f, healthFillUpdateStep = 0.8f;
     private float healthFillAmount => gameCanvas.healthSlider.slider.fillAmount;
@@ -81,16 +89,17 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         gameCanvas.coins.text = "0";
-        menuCanvas.mouseXSensitivitySlider.value = 1.8f;
-        menuCanvas.mouseYSensitivitySlider.value = 0.85f;
-        menuCanvas.gamepadXSensitivitySlider.value = 0.5f;
-        menuCanvas.gamepadYSensitivitySlider.value = 0.3f;
+        //menuCanvas.mouseXSensitivitySlider.value = 1.8f;
+        //menuCanvas.mouseYSensitivitySlider.value = 0.85f;
+        //menuCanvas.gamepadXSensitivitySlider.value = 0.5f;
+        //menuCanvas.gamepadYSensitivitySlider.value = 0.3f;
         gameCanvas.interactionIndicator.SetActive(false);
         
         //Add listener for when the value of the Dropdown changes
         menuCanvas.difficultyDropdown.onValueChanged.AddListener(delegate {
             OnDifficultyDropdownChange(menuCanvas.difficultyDropdown);
         });
+        /*
         //Add listener for mouse sensitivity slider changes
         menuCanvas.mouseXSensitivitySlider.onValueChanged.AddListener(delegate {
             OnSensitivityChange(menuCanvas.mouseXSensitivitySlider, menuCanvas.mouseYSensitivitySlider, false);
@@ -106,7 +115,8 @@ public class UIManager : MonoBehaviour
         menuCanvas.gamepadYSensitivitySlider.onValueChanged.AddListener(_ =>
         {
             OnSensitivityChange(menuCanvas.gamepadXSensitivitySlider, menuCanvas.gamepadYSensitivitySlider, true);
-        });
+        })
+        */
     }
 
     void Update()
@@ -134,6 +144,15 @@ public class UIManager : MonoBehaviour
         string killer = "";
         switch (e.killer)
         {
+            case GameOverEvent.Killer.Unknown:
+                killer = "Unknown";
+                break;
+            case GameOverEvent.Killer.Explosion:
+                killer = "an Explosion";
+                break;
+            case GameOverEvent.Killer.Falling:
+                killer = "falling";
+                break;
             case GameOverEvent.Killer.Drowned:
                 killer = "Drowning";
                 break;
@@ -155,13 +174,16 @@ public class UIManager : MonoBehaviour
         if (e.newState == GameStateChangedEvent.GameState.Play)
         {
             gameOverCanvas.canvas.gameObject.SetActive(false);
-            gameCanvas.canvas.gameObject.SetActive(true);
             menuCanvas.canvas.gameObject.SetActive(false);
+            winningCanvas.canvas.gameObject.SetActive(false);
+            
+            gameCanvas.canvas.gameObject.SetActive(true);
         }
         else if (e.newState == GameStateChangedEvent.GameState.Paused)
         {
             gameOverCanvas.canvas.gameObject.SetActive(false);
             gameCanvas.canvas.gameObject.SetActive(false);
+            winningCanvas.canvas.gameObject.SetActive(false);
             // close conversation if necessary
             GameEventManager.Raise(new ConversationUIEvent("", false));
             
@@ -171,6 +193,7 @@ public class UIManager : MonoBehaviour
         {
             gameOverCanvas.canvas.gameObject.SetActive(false);
             menuCanvas.canvas.gameObject.SetActive(false);
+            winningCanvas.canvas.gameObject.SetActive(false);
             // close conversation if necessary
             GameEventManager.Raise(new ConversationUIEvent("", false));
             
@@ -180,10 +203,21 @@ public class UIManager : MonoBehaviour
         {
             gameCanvas.canvas.gameObject.SetActive(false);
             menuCanvas.canvas.gameObject.SetActive(false);
+            winningCanvas.canvas.gameObject.SetActive(false);
             // close conversation if necessary
             GameEventManager.Raise(new ConversationUIEvent("", false));
             
             gameOverCanvas.canvas.gameObject.SetActive(true);
+        }
+        else if(e.newState == GameStateChangedEvent.GameState.Won)
+        {
+            gameCanvas.canvas.gameObject.SetActive(false);
+            menuCanvas.canvas.gameObject.SetActive(false);
+            gameOverCanvas.canvas.gameObject.SetActive(false);
+            // close conversation if necessary
+            GameEventManager.Raise(new ConversationUIEvent("", false));
+            
+            winningCanvas.canvas.gameObject.SetActive(true);
         }
     }
     
@@ -261,7 +295,7 @@ public class UIManager : MonoBehaviour
         }
     }
     
-    private Vector2 GetScreenCoordinatesOfPlayer(Vector3 position, Vector3 offset)
+    public Vector2 GetScreenCoordinatesOfObject(Vector3 position, Vector3 offset)
     {
         Vector3 worldPos = position + new Vector3(0, 0.5f, 0);
         Vector3 screenPos = OcclusionCameraController.Instance.GameplayCamera.WorldToScreenPoint(worldPos);
@@ -283,7 +317,7 @@ public class UIManager : MonoBehaviour
         if(e.interactionPossible)
         {
             // place indicator over interactable object
-            gameCanvas.interactionIndicator.transform.localPosition = GetScreenCoordinatesOfPlayer(e.interactable.transform.position, new Vector3(0, 0, 0));
+            gameCanvas.interactionIndicator.transform.localPosition = GetScreenCoordinatesOfObject(e.interactable.transform.position, new Vector3(0, 0, 0));
             // activate indicator
             gameCanvas.interactionIndicator.SetActive(true);
         } else
@@ -314,5 +348,19 @@ public class UIManager : MonoBehaviour
     private void OnSensitivityChange(Slider sliderX, Slider sliderY, bool mouseOrGamepad)
     {
         GameEventManager.Raise(new SensitivityChangeEvent(mouseOrGamepad, sliderX.value, sliderY.value));
+    }
+    
+    public void BackToMainMenu()
+    {
+        SceneLoader.Instance.LoadSceneGroup(0);  // title screen has ID=0
+    }
+    
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }

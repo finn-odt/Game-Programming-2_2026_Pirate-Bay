@@ -106,8 +106,11 @@ public class NPCSailorBehaviour : StatefulMonoBehaviour<NPCSailorBehaviour>
         
         if(other.gameObject.layer == (int)LayerId.Player) {
             playerInTrigger = true;
-            if(fsm.CurrentState.GetType() == typeof(SailorIdleState))
+            if (fsm.CurrentState.GetType() == typeof(SailorIdleState))
+            {
                 GameEventManager.Raise(new InteractionPossibleEvent(true, gameObject));
+                GameEventManager.Raise(new UIInteractIndicatorEvent());
+            }
         }
     }
 

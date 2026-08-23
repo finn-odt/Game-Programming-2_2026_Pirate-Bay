@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using GameEvents;
 using TMPro;
 using UnityEngine;
 
@@ -10,36 +7,51 @@ public class TextUIBlink : MonoBehaviour
 {
     private TextMeshProUGUI uiText;
 
-    [SerializeField] private float intervalLength = 1f;
-    private float timeSinceLastBlink = 0f;
-    private int sign = 1;
-    
-    Coroutine blinkCoroutine;
+    [SerializeField] private float blinkSpeed = 1f;
 
-    private void Start()
+    private Coroutine blinkCoroutine;
+    private float direction = -1f;
+
+    private void Awake()
     {
         uiText = GetComponent<TextMeshProUGUI>();
-
-        StartCoroutine(Blink());
     }
 
-    private void OnDestroy()
+    private void OnEnable()
     {
-        if(blinkCoroutine != null)
+        blinkCoroutine = StartCoroutine(Blink());
+    }
+
+    private void OnDisable()
+    {
+        if (blinkCoroutine != null)
+        {
             StopCoroutine(blinkCoroutine);
+            blinkCoroutine = null;
+        }
     }
 
     private IEnumerator Blink()
     {
-        while (blinkCoroutine != null)
+        while (true)
         {
-            Color c = uiText.color;
-            c.a += sign * 0.1f;
+            Color color = uiText.color;
 
-            if (c.a >= 1 || c.a <= 0)
-                sign *= -1;
+            color.a += direction * blinkSpeed * Time.unscaledDeltaTime;
 
-            uiText.color = c;
+            if (color.a <= 0f)
+            {
+                color.a = 0f;
+                direction = 1f;
+            }
+            else if (color.a >= 1f)
+            {
+                color.a = 1f;
+                direction = -1f;
+            }
+
+            uiText.color = color;
+
             yield return null;
         }
     }

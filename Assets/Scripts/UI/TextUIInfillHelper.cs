@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GameEvents;
+using SLTypes;
 using TMPro;
 using TriInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityServiceLocator;
 
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class TextUIInfillHelper : MonoBehaviour
@@ -16,6 +18,8 @@ public class TextUIInfillHelper : MonoBehaviour
         AlsoAfterTime,
         AlsoOnEvent
     }
+
+    private IPlayer player;
     
     [Serializable]
     public class TextPart
@@ -68,6 +72,7 @@ public class TextUIInfillHelper : MonoBehaviour
         }
     }
 
+    [SerializeField] private bool placeOnPlayersScreenLocation = false;
     [SerializeField] private List<TextPart> TextParts;
     [SerializeField] private string fillerBetweenTextParts = "";
     
@@ -85,23 +90,46 @@ public class TextUIInfillHelper : MonoBehaviour
         // check whether any TextParts need EventListeners (& add them)
         for (int i = 0; i < TextParts.Count; i++)
         {
-            TextParts[i].EnsureId();  // ensure there is a unique id for every TextPart
+            TextPart part = TextParts[i];
+            part.EnsureId();  // ensure there is a unique id for every TextPart
+
+            if (!part.eventTriggers.HasEventStartTrigger)
+                continue;
             
-            Type eventType = TextParts[i].eventTriggers.activateOnThisEvent.Type;
+            // register activation event trigger
+            RegisterEventType(part.eventTriggers.activateOnThisEvent?.Type);
 
-            if (eventType == null)
+            if (part.eventTriggers.deactivateTrigger == null || !part.eventTriggers.deactivateTrigger.HasEventStopTrigger)  // no deactivate event trigger
                 continue;
-
-            if (!registeredEventTypes.Add(eventType))
-                continue;
-
-            GameEventManager.AddListener(eventType, OnEventTrigger);
+            
+            // register potential deactivation event trigger
+            RegisterEventType(part.eventTriggers.deactivateTrigger?.deactivateOnThisEvent?.Type);
         }
+    }
+    
+    private void RegisterEventType(Type eventType)
+    {
+        if (eventType == null)
+            return;
+
+        if (!registeredEventTypes.Add(eventType))  // already registered?
+            return;
+
+        GameEventManager.AddListener(eventType, OnEventTrigger);
+
+        Debug.Log($"[TextUI] Registered listener for {eventType.Name}", this);
+    }
+
+    private void Start()
+    {
+        ServiceLocator.ForSceneOf(this).Get(out player);
     }
 
     private void OnEventTrigger(GameEvent e)
     {
         Type eventType = e.GetType();
+     
+        Debug.Log(eventType.ToString());
         
         for (int i = 0; i < TextParts.Count; i++)
         {
@@ -199,5 +227,14 @@ public class TextUIInfillHelper : MonoBehaviour
                 output += part.text + fillerBetweenTextParts;
         }
         uiText.text = output;
+        
+        if(output.Length > 0 && player != null && placeOnPlayersScreenLocation)
+            PlaceOnPlayersScreenLocation();
+    }
+
+    private void PlaceOnPlayersScreenLocation()
+    {
+        // place indicator over player
+        transform.localPosition = UIManager.Instance.GetScreenCoordinatesOfObject(player.Position, new Vector3(0, player.Height * 0.5f, 0));
     }
 }

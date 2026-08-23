@@ -4,6 +4,7 @@ using Configurations;
 using GameEvents;
 using Opsive.UltimateCharacterController.AddOns.Climbing;
 using Opsive.UltimateCharacterController.AddOns.Swimming;
+using Opsive.UltimateCharacterController.Character;
 using Opsive.UltimateCharacterController.Character.Abilities;
 using Opsive.UltimateCharacterController.Traits;
 using Attribute = Opsive.UltimateCharacterController.Traits.Attribute;
@@ -21,6 +22,7 @@ namespace Player
         [SerializeField] private IntegerSO collectedCoins;
         [SerializeField] private IntegerSO health;
         private Health _opsiveHealth;
+        private UltimateCharacterLocomotion characterLocomotion;
         [SerializeField] private float playerHeight;
         [SerializeField] private GameObject leftHandEquipParent, rightHandEquipParent;
         [SerializeField] private Transform dropOrigin;
@@ -61,6 +63,9 @@ namespace Player
             // register (this) player
             ServiceLocator.ForSceneOf(this).Register<IPlayer>(this);
             
+            // UCC Locomotion for Initial Positioning
+            characterLocomotion = GetComponent<UltimateCharacterLocomotion>();
+            
             // initialize attribute of character controller
             if (attributeManager == null)
                 attributeManager = GetComponent<AttributeManager>();
@@ -97,18 +102,6 @@ namespace Player
         {
             Debug.Log($"Health Display: {health.RuntimeValue}");
             UIManager.Instance.DisplayHealth(health.RuntimeValue);
-        }
-
-
-        public void OnCharacterAbilityActive(Ability ability, bool active)
-        {
-            if (ability.GetType() == typeof(Drown))
-            {
-                GameEventManager.Raise(new GameOverEvent(transform.position, GameOverEvent.Killer.Drowned));
-            } else if (ability.GetType() == typeof(Die))
-            {
-                GameEventManager.Raise(new GameOverEvent(transform.position, GameOverEvent.Killer.Npc));
-            }
         }
 
         private void Update()
@@ -177,6 +170,7 @@ namespace Player
             GameEventManager.AddListener<PlayerStripItemEvent>(StripItemFromHand);
             
             GameEventManager.AddListener<PlayerUseHandRequestEvent>(OnHandUseRequest);
+            
         }
 
         void OnDisable()
@@ -191,6 +185,53 @@ namespace Player
             GameEventManager.RemoveListener<PlayerStripItemEvent>(StripItemFromHand);
             
             GameEventManager.RemoveListener<PlayerUseHandRequestEvent>(OnHandUseRequest);
+            
+        }
+        
+        public void OnCharacterAbilityActive(Ability ability, bool active)
+        {
+            if (!active)
+                return;
+            
+            Debug.Log($"Ability Active: {ability.GetType()}");
+
+            if (ability is Drown)
+            {
+                GameEventManager.Raise(
+                    new GameOverEvent(
+                        transform.position,
+                        GameOverEvent.Killer.Drowned
+                    )
+                );
+            }
+            else if (ability is Die)
+            {
+                GameOverEvent.Killer killer;
+
+                if (pendingDamageSource.HasValue)
+                    killer = ConvertToKiller(pendingDamageSource.Value);
+                else
+                    killer = GameOverEvent.Killer.Falling;
+
+                GameEventManager.Raise(
+                    new GameOverEvent(
+                        transform.position,
+                        killer
+                    )
+                );
+            }
+        }
+        
+        private GameOverEvent.Killer ConvertToKiller(PlayerDamageEvent.DamagedBy damagedBy)
+        {
+            return damagedBy switch
+            {
+                PlayerDamageEvent.DamagedBy.NPC => GameOverEvent.Killer.Npc,
+                PlayerDamageEvent.DamagedBy.Shark => GameOverEvent.Killer.Shark,
+                PlayerDamageEvent.DamagedBy.Explosion => GameOverEvent.Killer.Explosion,
+                PlayerDamageEvent.DamagedBy.Water => GameOverEvent.Killer.Drowned,
+                _ => GameOverEvent.Killer.Unknown
+            };
         }
 
         private void OnHandUseRequest(PlayerUseHandRequestEvent e)
@@ -228,10 +269,15 @@ namespace Player
             AddCoins(e.amount > 0 ? -1 * e.amount : e.amount);
         }
 
+        
+        private PlayerDamageEvent.DamagedBy? pendingDamageSource;
         private void OnDamage(PlayerDamageEvent e)
         {
-            if(e.healthPoints > 0)
-                TakeDamage(e.healthPoints);
+            if (e.healthPoints <= 0)
+                return;
+            
+            pendingDamageSource = e.damagedBy;
+            TakeDamage(e.healthPoints);
         }
 
         private void OnHealing(PlayerHealEvent e)
@@ -264,6 +310,7 @@ namespace Player
             // update ScriptableObject-Data & save new value
             int newHealth = health.Subtract(amount);
             
+            
             // set health in Ultimate Character Controller
             _opsiveHealth.Damage(amount);
             
@@ -271,9 +318,9 @@ namespace Player
             UIManager.Instance.DisplayHealth(HealthPercentage);
         }
         
-        public void SetInitialPosition(Vector3 pos)
+        public void SetInitialPosition(Vector3 pos, Quaternion rotation)
         {
-            transform.position = pos;
+            characterLocomotion.SetPositionAndRotation(pos, rotation);
         }
         
         public void SetInitialCoins(int coins)

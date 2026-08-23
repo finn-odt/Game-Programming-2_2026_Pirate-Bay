@@ -121,6 +121,41 @@ namespace UnityConstantsGenerator
         /// </summary>
         public static readonly string GamepadUI = "GamepadUI";
 
+        /// <summary>
+        /// BoatWaypointF
+        /// </summary>
+        public static readonly string BoatWaypointF = "BoatWaypointF";
+
+        /// <summary>
+        /// BoatWaypointG
+        /// </summary>
+        public static readonly string BoatWaypointG = "BoatWaypointG";
+
+        /// <summary>
+        /// WaypointE
+        /// </summary>
+        public static readonly string WaypointE = "WaypointE";
+
+        /// <summary>
+        /// WaypointF
+        /// </summary>
+        public static readonly string WaypointF = "WaypointF";
+
+        /// <summary>
+        /// WaypointG
+        /// </summary>
+        public static readonly string WaypointG = "WaypointG";
+
+        /// <summary>
+        /// WaypointH
+        /// </summary>
+        public static readonly string WaypointH = "WaypointH";
+
+        /// <summary>
+        /// WaypointK
+        /// </summary>
+        public static readonly string WaypointK = "WaypointK";
+
     }
 
 }

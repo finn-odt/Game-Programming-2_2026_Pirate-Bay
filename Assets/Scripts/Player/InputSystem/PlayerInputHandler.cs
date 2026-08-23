@@ -44,7 +44,7 @@ public class PlayerInputHandler : MonoBehaviour
 		if (!value.isPressed)
 			return;
 
-		GameManager.Instance.RestartRequest();
+		GameManager.Instance.RequestRestart();
 	}
 
 	public void OnUseLeftHand(InputValue value)

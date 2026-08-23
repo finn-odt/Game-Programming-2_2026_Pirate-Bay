@@ -67,7 +67,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8de1f25ed5933cf47b80ad92fcb930ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Coin
-  data: 10
+  data: 5
   coinSound: {fileID: 8300000, guid: c23f1170f3ea114418c0bd379ed1cfa3, type: 3}
   collectedCoins: {fileID: 11400000, guid: c92cea1477f679b4abd4cc4cdaf79292, type: 2}
 --- !u!1 &5487967254961338776

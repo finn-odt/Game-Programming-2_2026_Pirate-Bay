@@ -175,9 +175,10 @@ public class NPCFollowerBehaviour : StatefulMonoBehaviour<NPCFollowerBehaviour>,
             runtimeHealth = Instantiate(value);  // clone health to runtimeHealth
     }
     
-    public void SetInitialPosition(Vector3 pos)
+    public void SetInitialPosition(Vector3 pos, Quaternion rot)
     {
-        transform.position = pos;
+        agent.nextPosition = pos;
+        agent.transform.rotation = rot;
     }
 
     public void UseItem(ItemUseBehaviourSO useBehaviour, bool leftHand, InventoryItemDataSO itemData, Transform useOrigin)

@@ -69,7 +69,7 @@ namespace StarterAssets
 			if (!value.isPressed)
 				return;
 
-			GameManager.Instance.RestartRequest();
+			GameManager.Instance.RequestRestart();
 		}
 
 		public void OnUseLeftHand(InputValue value)
