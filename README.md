@@ -87,3 +87,5 @@ Play the game and find out all funny interactions and mechanics :)
 | Cinemachine    | Used for the gameplay camera, as well as heavily for the two cut scenes.    |
 | Visual Quality    | Specific Skybox and different Post-Processing Volumes with a VolumeController that changes according to the game state.    |
 | Bonus    | Two full cut scenes with additional loading screen, main menu, pause menu and different UI overlays for all scenes. Sharks that are spawned automatically and move autonoumously while being able to attack as well as boats that can be used as taxi service when giving money to the sailor. Special Shader for the target, so that the player can see their goal.    |
+
+*Note:* As the project was too big for Git LFS in the end, I had to delete some unused data, but I accidentally deleted some more, so maybe you will encounter some magenta objects...
